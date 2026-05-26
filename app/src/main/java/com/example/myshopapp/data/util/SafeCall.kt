@@ -1,5 +1,6 @@
 package com.example.myshopapp.data.util
 
+import android.util.Log
 import retrofit2.Response
 
 suspend fun <T> safeApiCall(
@@ -10,11 +11,14 @@ suspend fun <T> safeApiCall(
         if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
+
+
                 Result.success(body)
             } else {
                 Result.failure(Exception("Response body boşdur"))
             }
         } else {
+
             Result.failure(Exception("Xəta kodu: ${response.code()} - ${response.message()}"))
         }
     } catch (e: Exception) {

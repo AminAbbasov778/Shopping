@@ -1,6 +1,5 @@
 package com.example.myshopapp.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.myshopapp.domain.usecase.DepositUseCase
 import com.example.myshopapp.domain.usecase.GetCashierNameUseCase
@@ -13,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,62 +20,60 @@ import javax.inject.Inject
 class DepositViewModel @Inject constructor(
     private val depositUseCase: DepositUseCase,
     private val getCashierNameUseCase: GetCashierNameUseCase,
-    private val getLastDocumentUseCase: GetLastDocumentUseCase
+    private val getLastDocumentUseCase: GetLastDocumentUseCase,
 ) : BaseViewModel() {
 
     private val _state = MutableStateFlow(DepositUiState())
     val state = _state.asStateFlow()
 
     fun setAmount(v: String) {
-        _state.value = _state.value.copy(amount = v)
+        _state.update { it.copy(amount = v) }
     }
 
-    fun deposit( ) {
+    fun deposit() {
         val amount = _state.value.amount.toDoubleOrNull()
         if (amount == null || amount <= 0) {
             emitError("Məbləğ daxil edin")
             return
         }
 
-        viewModelScope.launch(Dispatchers.IO){
-            _state.value = _state.value.copy(isLoading = true)
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true) }
 
-            Log.d("DepositViewModel", "deposit: ${_state.value.amount}")
+            val docResult = getLastDocumentUseCase()
+            val docResponse = docResult.getOrNull()
 
-            getLastDocumentUseCase().onSuccess {doc->
-
-                val name = getCashierNameUseCase()
-                Log.d("DepositViewModel", "depositDocsuccess: ${doc.data.doc.docNumber}${name}")
-
-                name?.let {
-                    val request = DepositRequest(
-                        cashier = name,
-                        currency = CURRENCY,
-                        sum = amount,
-                        prevDocNumber = doc.data.doc.docNumber)
-
-                    depositUseCase(request)
-                        .onSuccess {
-                            Log.d("DepositViewModel", "deposit: success")
-                            _state.value = _state.value.copy(isLoading = false)
-                            emitSuccess("Depozit uğurlu!")
-                        }
-                        .onFailure {
-                            _state.value = _state.value.copy(isLoading = false)
-                            emitError(it.message)
-                        }
-
-                }
-            }.onFailure {
-                Log.d("DepositViewModel", "depositDocerrir: ${it.message}")
-
-                _state.value = _state.value.copy(isLoading = false)
-                emitError(it.message)
-
+            if (docResult.isFailure || docResponse?.data == null || docResponse.code != 0) {
+                _state.update { it.copy(isLoading = false) }
+                emitError(docResponse?.message ?: docResult.exceptionOrNull()?.message)
+                return@launch
             }
 
+            val name = getCashierNameUseCase()
+            if (name == null) {
+                _state.update { it.copy(isLoading = false) }
+                emitError("Kassir adı tapılmadı")
+                return@launch
+            }
 
+            val request = DepositRequest(
+                cashier = name,
+                currency = CURRENCY,
+                sum = amount,
+                prevDocNumber = docResponse.data.doc.docNumber
+            )
 
+            val depositResult = depositUseCase(request)
+            val depositResponse = depositResult.getOrNull()
+
+            if (depositResult.isFailure || depositResponse?.data == null || depositResponse.code != 0) {
+                _state.update { it.copy(isLoading = false) }
+                emitError(depositResponse?.message ?: depositResult.exceptionOrNull()?.message)
+                return@launch
+            }
+
+            _state.update { it.copy(isLoading = false) }
+            emitSuccess("Depozit uğurlu!")
         }
     }
 }

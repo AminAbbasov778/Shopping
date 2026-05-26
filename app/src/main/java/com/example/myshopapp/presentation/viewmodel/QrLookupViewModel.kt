@@ -6,6 +6,7 @@ import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.domain.usecase.GetSaleFullByQrUseCase
 import com.example.myshopapp.presentation.base.BaseViewModel
 import com.example.myshopapp.presentation.state.QrScanUiState
+import com.example.myshopapp.presentation.util.Util.extractDocumentId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,29 +47,22 @@ class QrLookupViewModel @Inject constructor(
 
                     if (saleFull == null) {
                         _state.update { it.copy(isLoading = false, sale = null) }
-
                         isProcessing = false
                         lastScannedQr = null
                         return@onSuccess
                     }
-
-
 
                     if (saleFull.sale.createdAt >= limit) {
                         _state.update { state ->
                             state.copy(isLoading = false, sale = saleFull.sale)
                         }
                     } else {
-
                         _state.update { it.copy(isLoading = false, sale = null) }
-
-
                         lastScannedQr = null
                     }
                     isProcessing = false
                 }
                 .onFailure { throwable ->
-
                     _state.update { it.copy(isLoading = false, sale = null) }
                     emitError(throwable.message ?: "Xəta baş verdi")
                     isProcessing = false
@@ -78,17 +72,9 @@ class QrLookupViewModel @Inject constructor(
     }
 
 
-    private fun extractDocumentId(input: String): String {
-        return when {
-            input.contains("doc=") -> {
-                input.substringAfter("doc=").trim()
-            }
-            else -> input.trim()
-        }
-    }
 
     fun clear() {
-        _state.value = QrScanUiState()
+        _state.update { QrScanUiState() }
         isProcessing = false
         lastScannedQr = null
     }

@@ -3,7 +3,6 @@ package com.example.myshopapp.presentation.mapper
 import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleItemEntity
 import com.example.myshopapp.data.local.entity.SaleVatEntity
-import com.example.myshopapp.presentation.state.PaymentUiState
 import com.example.myshopapp.presentation.util.SaleStatus
 import com.example.myshopapp.util.Constants.CURRENCY
 import com.example.shopapp.data.remote.model.request.sale.SaleRequest
@@ -12,7 +11,7 @@ import com.example.shopapp.data.remote.model.response.sale.SaleResponse
 fun SaleResponse.toSaleEntity(
     shiftOpenTime: String,
     cashierName: String,
-    state: PaymentUiState,
+    request: SaleRequest,
 ): SaleEntity = SaleEntity(
     documentId      = data.documentId,
     shortDocumentId = data.shortDocumentId,
@@ -21,14 +20,14 @@ fun SaleResponse.toSaleEntity(
     shiftKey        = shiftOpenTime,
     cashier         = cashierName,
     currency        = CURRENCY,
-    total           = state.total,
-    cashSum         = state.cash.toDoubleOrNull()       ?: 0.0,
-    cardSum         = state.card.toDoubleOrNull()       ?: 0.0,
-    bonusSum        = state.bonus.toDoubleOrNull()      ?: 0.0,
-    creditSum       = state.credit.toDoubleOrNull()     ?: 0.0,
-    prepaymentSum   = state.prepayment.toDoubleOrNull() ?: 0.0,
-    incomingSum     = state.cash.toDoubleOrNull()       ?: 0.0,
-    changeSum       = state.change,
+    total           = request.sum,
+    cashSum         = request.cashSum,
+    cardSum         = request.cashlessSum,
+    bonusSum        = request.bonusSum,
+    creditSum       = request.creditSum,
+    prepaymentSum   = request.prepaymentSum,
+    incomingSum     = request.incomingSum,
+    changeSum       = request.changeSum,
     rrn             = rrn,
     uuid            = uuid,
     status          = SaleStatus.COMPLETED,

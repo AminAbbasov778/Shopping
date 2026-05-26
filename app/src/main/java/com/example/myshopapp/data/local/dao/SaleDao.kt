@@ -39,9 +39,6 @@ interface SaleDao {
     @Query("SELECT * FROM sales WHERE fullDocumentId = :qr LIMIT 1")
     suspend fun getSaleFullByQr(qr: String): SaleFull?
 
-    @Transaction
-    @Query("SELECT * FROM sales WHERE documentId = :docId LIMIT 1")
-    suspend fun getSaleFullByDocumentId(docId: String): SaleFull?
 
     @Transaction
     @Query("SELECT * FROM sales WHERE shiftKey = :shiftKey ORDER BY createdAt DESC")

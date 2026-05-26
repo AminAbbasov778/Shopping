@@ -8,4 +8,14 @@ object Util {
             java.util.Locale.getDefault()
         ).format(java.util.Date(time))
     }
+
+     fun extractDocumentId(input: String): String {
+        return when {
+            input.contains("doc=") -> {
+                input.substringAfter("doc=").trim()
+            }
+            else -> input.trim()
+        }
+    }
+
 }

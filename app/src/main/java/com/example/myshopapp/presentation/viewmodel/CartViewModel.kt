@@ -8,6 +8,7 @@ import com.example.myshopapp.presentation.util.CartCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,7 +22,7 @@ class CartViewModel @Inject constructor() : ViewModel() {
     private var cartDiscountPercent: Double = 0.0
 
     fun add(product: ProductEntity) {
-        val list  = _rawItems.value.toMutableList()
+        val list = _rawItems.value.toMutableList()
         val index = list.indexOfFirst { it.product.id == product.id }
 
         if (index >= 0) {
@@ -35,7 +36,7 @@ class CartViewModel @Inject constructor() : ViewModel() {
     }
 
     fun minus(productId: Long) {
-        val list  = _rawItems.value.toMutableList()
+        val list = _rawItems.value.toMutableList()
         val index = list.indexOfFirst { it.product.id == productId }
 
         if (index >= 0) {
@@ -68,20 +69,22 @@ class CartViewModel @Inject constructor() : ViewModel() {
     fun clearCart() {
         cartDiscountPercent = 0.0
         _rawItems.value = emptyList()
-        _state.value    = CartUiState()
+        _state.update { CartUiState() }
     }
 
     private fun calculate() {
         val totals = CartCalculator.calculate(_rawItems.value, cartDiscountPercent)
 
-        _state.value = CartUiState(
-            items               = totals.calculatedItems,
-            cartDiscountPercent = cartDiscountPercent,
-            cartDiscountAmount  = totals.cartDiscountAmount,
-            total               = totals.total,
-            totalDiscount       = totals.totalDiscount,
-            vatSummary          = totals.vatMap,
-            netTotal            = totals.total,
-        )
+        _state.update {
+            it.copy(
+                items = totals.calculatedItems,
+                cartDiscountPercent = cartDiscountPercent,
+                cartDiscountAmount = totals.cartDiscountAmount,
+                total = totals.total,
+                totalDiscount = totals.totalDiscount,
+                vatSummary = totals.vatMap,
+                netTotal = totals.total
+            )
+        }
     }
 }

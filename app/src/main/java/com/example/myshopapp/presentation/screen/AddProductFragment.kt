@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.myshopapp.data.local.entity.ProductEntity
 import com.example.myshopapp.databinding.FragmentAddProductBinding
 import com.example.myshopapp.presentation.state.ProductUiState
@@ -42,12 +43,19 @@ class AddProductFragment : Fragment() {
         setupAgroSwitch()
         observeState()
         setupClicks()
+
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
+
     }
 
     private fun setupAgroSwitch() {
         binding.switchAgro.setOnCheckedChangeListener { _, isChecked ->
             applyAgroVatState(isChecked)
         }
+
+
     }
 
     private fun applyAgroVatState(isAgro: Boolean) {

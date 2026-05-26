@@ -50,7 +50,6 @@ interface SaleRepository {
 
     suspend fun getSaleFullByQr(qr: String): Result<SaleFull?>
 
-    suspend fun getSaleFullByDocumentId(docId: String): Result<SaleFull?>
 
     fun getShiftSalesFull(shiftKey: String): Flow<Result<List<SaleFull>>>
 

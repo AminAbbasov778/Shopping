@@ -1,6 +1,5 @@
 package com.example.myshopapp.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.myshopapp.domain.usecase.GetCashierNameUseCase
 import com.example.myshopapp.domain.usecase.GetShiftUseCase
@@ -19,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,38 +34,39 @@ class PaymentViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     fun setTotal(total: Double) {
-        _state.value = _state.value.copy(total = total)
+        _state.update { it.copy(total = total) }
         recalcalculate()
     }
 
     fun setCash(cash: String) {
-        _state.value = _state.value.copy(cash = cash)
+        _state.update { it.copy(cash = cash) }
         recalcalculate()
     }
 
     fun setCard(card: String) {
-        _state.value = _state.value.copy(card = card)
+        _state.update { it.copy(card = card) }
         recalcalculate()
     }
 
     fun setBonus(bonus: String) {
-        _state.value = _state.value.copy(bonus = bonus)
+        _state.update { it.copy(bonus = bonus) }
         recalcalculate()
     }
 
-
-
     private fun recalcalculate() {
-        val state = _state.value
-        val cash = state.cash.toDoubleOrNull() ?: 0.0
-        val card = state.card.toDoubleOrNull() ?: 0.0
-        val bonus = state.bonus.toDoubleOrNull() ?: 0.0
+        _state.update { state ->
+            val cash = state.cash.toDoubleOrNull() ?: 0.0
+            val card = state.card.toDoubleOrNull() ?: 0.0
 
-        val paid = cash + card + bonus
-        val remaining = (state.total - paid).coerceAtLeast(0.0)
-        val change = (paid - state.total).coerceAtLeast(0.0)
+            val bonus = state.bonus.toDoubleOrNull() ?: 0.0
 
-        _state.value = state.copy(paid = paid, remaining = remaining, change = change)
+            val paid = cash + card + bonus
+
+            val remaining = (state.total - paid).coerceAtLeast(0.0)
+            val change = (paid - state.total).coerceAtLeast(0.0)
+
+            state.copy(paid = paid, remaining = remaining, change = change)
+        }
     }
 
     fun submitSale(request: SaleRequest, cartItems: List<CartItem>) {
@@ -82,71 +83,65 @@ class PaymentViewModel @Inject constructor(
             changeSum = request.changeSum,
             totalSum = request.sum,
             vatAmounts = request.vatAmounts,
-
-            ).filterNot { it.contains("Kassir") }
-
+        ).filterNot { it.contains("Kassir") }
 
         if (errors.isNotEmpty()) {
-
             emitError(errors.first())
             return
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
 
             val name = getCashierNameUseCase() ?: return@launch
 
             val submitResult = submitSaleUseCase(request.copy(cashier = name))
+            val submitResponse = submitResult.getOrNull()
 
-            if (submitResult.isFailure || submitResult.getOrNull()?.data == null) {
-                Log.e("submitSale", "submitSale: ${submitResult.exceptionOrNull()?.message}")
+            if (submitResult.isFailure || submitResponse?.data == null || submitResponse.code != 0) {
+                _state.update {
+                    it.copy(isLoading = false)
 
-                _state.value = _state.value.copy(isLoading = false)
-
-                emitError(submitResult.exceptionOrNull()?.message)
-
+                }
+                emitError(submitResponse?.message ?: submitResult.exceptionOrNull()?.message)
                 emitNavigateBack()
-
-
                 return@launch
             }
-
             val response = submitResult.getOrThrow()
 
-            Log.e("submitSale", "submitSalesuccess: ${response.data.documentId}")
-
-
             val shiftResult = getShiftUseCase()
-            if (shiftResult.isFailure) {
 
-                _state.value = _state.value.copy(isLoading = false)
+            if (shiftResult.isFailure || shiftResult.getOrNull()?.code != 0) {
+
+
+                _state.update { it.copy(isLoading = false) }
+
+
                 emitError(shiftResult.exceptionOrNull()?.message)
-
-
 
                 emitNavigateBack()
                 return@launch
             }
+
+
             val shift = shiftResult.getOrThrow()
 
-            val saleEntity = response.toSaleEntity(shift.data.shiftOpenTime, name, _state.value)
+            val saleEntity = response.toSaleEntity(shift.data.shiftOpenTime, name, request)
+
             val items = request.toSaleItemEntities(response.data.documentId)
+
 
             val vat = request.toVatEntities(response.data.documentId)
 
             val saveResult = saveSaleUseCase(saleEntity, items, vat)
-            _state.value = _state.value.copy(isLoading = false)
+            _state.update { it.copy(isLoading = false) }
 
             if (saveResult.isSuccess) {
-                emitSuccess("Ödəniş uğurlu!")
-
+                emitSuccess("Odənis ugurlu")
                 emitNavigateBack()
-
             } else {
                 emitError(saveResult.exceptionOrNull()?.message)
                 emitNavigateBack()
-
             }
         }
     }

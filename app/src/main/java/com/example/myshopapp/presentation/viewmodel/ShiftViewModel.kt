@@ -26,35 +26,50 @@ class ShiftViewModel @Inject constructor(
 
     fun loadShift() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-
+            _state.update { it.copy(isLoading = true)
+            }
 
             val result = getShiftUseCase()
-            result.onSuccess {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    shift = it
-                )
-            }.onFailure {
+            result.onSuccess { shift ->
+                if(shift.code != 0){
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = shift.message
+                        )
+                    }
+                    return@onSuccess
+                }
 
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = result.exceptionOrNull()?.message
-                )
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        shift = shift
+                    )
+                }
+            }.onFailure {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = result.exceptionOrNull()?.message
+                    )
+                }
             }
         }
     }
-
 
     fun openShift() {
         viewModelScope.launch {
             val result = openShiftUseCase()
             result.onSuccess {
+                if(it.code != 0){
+                    _state.update { it.copy(error = it.error) }
+                    return@onSuccess
+                }
 
                 loadShift()
-            }.onFailure { throwable ->
-
-                _state.update { it.copy(error = throwable.message) }
+            }.onFailure { e ->
+                _state.update { it.copy(error = e.message) }
             }
         }
     }
@@ -63,13 +78,15 @@ class ShiftViewModel @Inject constructor(
         viewModelScope.launch {
             val result = closeShiftUseCase()
             result.onSuccess {
+                if(it.code != 0){
+                    _state.update { it.copy(error = it.error) }
+                    return@onSuccess
+                }
 
                 loadShift()
-            }.onFailure { throwable ->
-
-                _state.update { it.copy(error = throwable.message) }
+            }.onFailure { e ->
+                _state.update { it.copy(error = e.message) }
             }
         }
     }
-
 }

@@ -86,9 +86,6 @@ class SaleRepositoryImpl @Inject constructor(
         dao.getSaleFullByQr(qr)
     }
 
-    override suspend fun getSaleFullByDocumentId(docId: String): Result<SaleFull?> = safeDbCall {
-        dao.getSaleFullByDocumentId(docId)
-    }
 
 
 

@@ -18,6 +18,7 @@ object TokenManager {
 
         val currentTime = System.currentTimeMillis()
 
+
         if (cachedToken != null && (currentTime - lastTime) < 50_000) {
 
             return Triple(cachedToken!!, lastDt, lastNonce)

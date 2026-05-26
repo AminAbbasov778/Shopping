@@ -8,6 +8,9 @@ import com.example.myshopapp.presentation.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,16 +21,16 @@ class LoginViewModel @Inject constructor(
 ) : BaseViewModel() {
 
     private val _loading = MutableStateFlow(false)
-    val loading = _loading
+    val loading = _loading.asStateFlow()
 
     private val _navigate = MutableSharedFlow<Unit>()
-    val navigate = _navigate
+    val navigate = _navigate.asSharedFlow()
 
     fun login(cashierName: String) {
 
         viewModelScope.launch {
 
-            _loading.value = true
+            _loading.update { true }
 
             loginUseCase()
                 .onSuccess { response ->
@@ -41,7 +44,7 @@ class LoginViewModel @Inject constructor(
                 }
                 .onFailure {
                     Log.e("LoginViewModel", "login: ${it.message}")
-                    _loading.value = false
+                    _loading.update { false }
                     emitError(it.message)
                 }
         }

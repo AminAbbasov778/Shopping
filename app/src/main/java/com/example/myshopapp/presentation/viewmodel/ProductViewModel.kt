@@ -10,6 +10,7 @@ import com.example.myshopapp.presentation.base.BaseViewModel
 import com.example.myshopapp.presentation.mapper.mapToProductEntity
 import com.example.myshopapp.presentation.state.ProductUiState
 import com.example.myshopapp.presentation.util.SaleValidator
+import com.example.myshopapp.presentation.util.roundTo2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +44,6 @@ class ProductViewModel @Inject constructor(
                     }
                 }
                 .onFailure {
-                    Log.e(LogTags.PRODUCT, "loadProduct error: ${it.message}")
                     _formState.update { it.copy(isLoading = false) }
                     emitError(it.message)
                 }
@@ -82,9 +82,9 @@ class ProductViewModel @Inject constructor(
 
         if (barcode.isNotBlank()) {
             val codeType = when (barcode.length) {
-                8 -> 1   // EAN8
-                13 -> 2  // EAN13
-                else -> 0 // Sadə mətn
+                8 -> 1
+                13 -> 2
+                else -> 0
             }
             SaleValidator.validateItemCodeType(codeType, barcode)?.let { error ->
                 _formState.update { it.copy(barcodeError = error) }
@@ -92,7 +92,7 @@ class ProductViewModel @Inject constructor(
             }
         }
 
-        val salePrice = salePriceStr.toDoubleOrNull()
+        val salePrice = salePriceStr.toDoubleOrNull()?.roundTo2()
         if (salePrice == null || salePrice < 0) {
             _formState.update { it.copy(salePriceError = "Düzgün satış qiyməti daxil edin") }
             return
@@ -103,34 +103,35 @@ class ProductViewModel @Inject constructor(
             vatPercent = 0.0
         } else {
             val parsed = vatStr.toDoubleOrNull() ?: 18.0
-
             SaleValidator.validateItemVatPercent(parsed)?.let { error ->
                 _formState.update { it.copy(vatError = error) }
                 return
             }
             vatPercent = parsed
         }
+        val purchasePriceRounded = purchasePrice.roundTo2()
 
-        if (isAgro && purchasePrice <= 0) {
+
+        if (isAgro && purchasePriceRounded <= 0) {
             _formState.update { it.copy(purchasePriceError = "Agro məhsul üçün alış qiyməti mütləqdir və 0-dan böyük olmalıdır") }
             return
         }
 
-        if (purchasePrice > 0 && purchasePrice >= salePrice) {
+        if (purchasePrice > 0 && purchasePriceRounded >= salePrice) {
             _formState.update { it.copy(purchasePriceError = "Alış qiyməti satış qiymətindən kiçik olmalıdır") }
             return
         }
 
         val productId = if (editProductId != -1L) editProductId else 0L
         val product = mapToProductEntity(
-            id = productId,
-            name = name,
-            code = code,
-            barcode = barcode,
-            salePrice = salePrice,
-            purchasePrice = purchasePrice,
-            vatPercent = vatPercent,
-            isAgro = isAgro
+            id            = productId,
+            name          = name,
+            code          = code,
+            barcode       = barcode,
+            salePrice     = salePrice,
+            purchasePrice = purchasePriceRounded,
+            vatPercent    = vatPercent,
+            isAgro        = isAgro
         )
 
         executeProductSave(product)
@@ -138,17 +139,14 @@ class ProductViewModel @Inject constructor(
 
     private fun executeProductSave(product: ProductEntity) {
         viewModelScope.launch {
-            Log.d(LogTags.PRODUCT, "ProductViewModel: addProduct called")
             _formState.update { it.copy(isLoading = true) }
 
             addProductUseCase(product)
                 .onSuccess {
-                    Log.d(LogTags.PRODUCT, "ProductViewModel: product saved")
                     _formState.update { it.copy(isLoading = false) }
                     emitNavigateBack()
                 }
                 .onFailure {
-                    Log.e(LogTags.PRODUCT, "ProductViewModel: error -> ${it.message}")
                     _formState.update { it.copy(isLoading = false) }
                     emitError(it.message)
                 }

@@ -147,7 +147,7 @@ object SaleValidator {
 
             if (incomingSum <= 0) return "cashSum > 0 olduqda incomingSum mütləqdir"
 
-            if (incomingSum < cashSum) return "incomingSum ($incomingSum) cashSum ($cashSum)-dən kiçik ola bilməz"
+            if (incomingSum < cashSum) return "incomingSum ($incomingSum) cashSum ($cashSum) dən kiçik ola bilməz"
 
             val expectedChange = "%.2f".format(incomingSum - cashSum).toDouble()
             if (Math.abs(expectedChange - changeSum) > 0.01) return "changeSum ($changeSum) = incomingSum - cashSum ($expectedChange) olmalıdır"
