@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_background"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/receiptCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/md_surface"
+            app:cardCornerRadius="16dp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tvDocumentId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Document"
+                    android:textColor="@color/md_primary"
+                    android:textStyle="bold"
+                    android:textSize="16sp"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/md_background" android:layout_marginVertical="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:textColor="@color/md_primary"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvCash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/md_secondary"/>
+
+                <TextView
+                    android:id="@+id/tvCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/md_secondary"/>
+
+                <TextView
+                    android:id="@+id/tvBonus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/md_secondary"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/md_background" android:layout_marginVertical="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvCashier"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/md_tertiary"/>
+
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/md_tertiary"/>
+
+                <TextView
+                    android:id="@+id/tvRrn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/md_tertiary"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/md_background" android:layout_marginVertical="10dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Products"
+                    android:textStyle="bold"
+                    android:textColor="@color/md_primary"/>
+
+                <TextView
+                    android:id="@+id/tvItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/md_on_surface"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/md_background" android:layout_marginVertical="10dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="VAT"
+                    android:textStyle="bold"
+                    android:textColor="@color/md_primary"/>
+
+                <TextView
+                    android:id="@+id/tvVat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/md_on_surface"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReprint"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="Reprint Receipt"
+            android:textStyle="bold"
+            app:backgroundTint="@color/md_primary"
+            app:cornerRadius="12dp"
+            app:layout_constraintTop_toBottomOf="@id/receiptCard"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefund"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="Refund"
+            android:textColor="?attr/colorError"
+            app:strokeColor="?attr/colorError"
+            app:cornerRadius="12dp"
+            app:layout_constraintTop_toBottomOf="@id/btnReprint"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:indeterminateTint="@color/md_primary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

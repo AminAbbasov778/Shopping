@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/shiftFragment"
+        android:icon="@drawable/shift_ic"
+        android:title="Növbə" />
+    <item
+        android:id="@+id/saleFragment2"
+        android:icon="@drawable/cart_ic"
+        android:title="Satış" />
+
+    <item
+        android:id="@+id/productListFragment"
+        android:icon="@drawable/product_ic"
+        android:title="Kataloq" />
+
+
+
+    <item
+        android:id="@+id/qrScannerFragment"
+        android:icon="@drawable/qr_ic"
+        android:title="QrScanner" />
+
+
+    <item
+        android:id="@+id/shiftSalesFragment"
+        android:icon="@drawable/withdraw_ic"
+        android:title="Növbə Satışları" />
+
+</menu>
+
+

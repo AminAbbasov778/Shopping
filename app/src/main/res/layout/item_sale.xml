@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://tools.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E0E2E5"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvShortDoc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textSize="15sp"
+            android:textColor="#1A1C1E"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvTime"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Çek #4512" />
+
+        <TextView
+            android:id="@+id/tvCashier"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:textSize="12sp"
+            android:textColor="#6C7075"
+            app:layout_constraintEnd_toStartOf="@id/tvTime"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvShortDoc"
+            tools:text="Kassir: Admin" />
+
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#8C9199"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="26.05.2026 • 14:35" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="#F0F2F5"
+            app:layout_constraintTop_toBottomOf="@id/tvCashier" />
+
+        <LinearLayout
+            android:id="@+id/paymentDetailsLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toStartOf="@+id/rightInfoLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <TextView
+                android:id="@+id/tvCashSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:textSize="13sp"
+                android:textColor="#43474E"
+                tools:text="• Nağd: 40.00 ₼" />
+
+            <TextView
+                android:id="@+id/tvCardSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:textSize="13sp"
+                android:textColor="#43474E"
+                tools:text="• Kart: 65.50 ₼" />
+
+            <TextView
+                android:id="@+id/tvBonusSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:textSize="13sp"
+                android:textColor="#D97400"
+                tools:text="• Bonus: 5.00 ₼" />
+
+            <TextView
+                android:id="@+id/tvChangeSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#2E7D32"
+                android:textStyle="italic"
+                tools:text="Qalıq: 4.50 ₼" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rightInfoLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <TextView
+                android:id="@+id/tvTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#1B5E20"
+                tools:text="110.50 ₼" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReprint"
+                style="@style/Widget.Material3.Button.TonalButton.Icon"
+                android:layout_width="85dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="8dp"
+                android:text="Print"
+                android:textSize="12sp"
+                android:textColor="#0061A6"
+                android:gravity="center"
+                android:padding="0dp"
+                app:iconPadding="0dp"
+                app:backgroundTint="#E1E2EC"
+                app:cornerRadius="8dp"
+              />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvRrn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="#F8FAFC"
+            android:padding="8dp"
+            android:textSize="11sp"
+            android:textColor="#8A92A6"
+            android:fontFamily="monospace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/paymentDetailsLayout"
+            tools:text="RRN: 123456789012  |  UUID: b1234567-a4f5-4cde-8901-abcdef123456" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
