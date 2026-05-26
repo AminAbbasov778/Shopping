@@ -19,14 +19,13 @@ object TokenManager {
         val currentTime = System.currentTimeMillis()
 
         if (cachedToken != null && (currentTime - lastTime) < 50_000) {
-            Log.e("TokenManager", "Using cached token")
+
             return Triple(cachedToken!!, lastDt, lastNonce)
         }
 
         val dt = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
             .format(Date())
 
-        Log.e("TokenManager", "Generating new token")
 
         val nonce = UUID.randomUUID()
             .toString()
