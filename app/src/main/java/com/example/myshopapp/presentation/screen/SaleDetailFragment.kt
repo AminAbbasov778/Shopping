@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.myshopapp.databinding.FragmentSaleDetailBinding
+import com.example.myshopapp.presentation.adapter.SoldProductAdapter
 import com.example.myshopapp.presentation.state.SaleDetailUiState
 import com.example.myshopapp.presentation.util.SaleStatus
 import com.example.myshopapp.presentation.util.Util.formatDate
@@ -22,27 +23,29 @@ class SaleDetailFragment : Fragment() {
     private var _binding: FragmentSaleDetailBinding? = null
     private val binding get() = _binding!!
 
-   lateinit var documentId : String
-
+    lateinit var documentId: String
     private val viewModel: SaleDetailViewModel by viewModels()
+    lateinit var soldAdapter: SoldProductAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSaleDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-         documentId = requireArguments().getString("documentId") ?: return
+        soldAdapter = SoldProductAdapter(
+            onPlus = { viewModel.plus(it) },
+            onMinus = { viewModel.minus(it) },
+            onRemove = { }
+        )
 
+        binding.tvItems.adapter = soldAdapter
+
+        documentId = requireArguments().getString("documentId") ?: return
         viewModel.load(documentId)
 
         setupButtons()
@@ -55,68 +58,69 @@ class SaleDetailFragment : Fragment() {
             viewModel.rollbackOrRefund()
         }
 
+        binding.btnVoid.setOnClickListener {
+            viewModel.rollback()
+        }
+
         binding.btnReprint.setOnClickListener {
             viewModel.reprint()
         }
     }
 
-    private fun renderButton(state: SaleDetailUiState) {
+    private fun renderButtons(state: SaleDetailUiState) {
+        val status = state.saleFull?.sale?.status
 
-        when {
-            state.saleFull?.sale?.status == SaleStatus.REFUNDED -> {
-                binding.btnRefund.text = "Refunded"
-                binding.btnRefund.isEnabled = false
-            }
+        if (status == SaleStatus.REFUNDED) {
+            binding.btnRefund.text = "Refunded"
+            binding.btnRefund.isEnabled = false
+            binding.btnVoid.isEnabled = false
+            return
+        }
 
-            state.saleFull?.sale?.status == SaleStatus.ROLLED_BACK -> {
-                binding.btnRefund.text = "Rolled Back"
-                binding.btnRefund.isEnabled = false
-            }
+        if (status == SaleStatus.ROLLED_BACK) {
+            binding.btnRefund.text = "Rolled Back"
+            binding.btnRefund.isEnabled = false
+            binding.btnVoid.isEnabled = false
+            return
+        }
 
-            state.canRollback -> {
+        if (state.isCashless) {
+            binding.btnVoid.visibility = View.GONE
+            if (state.canRollback) {
                 binding.btnRefund.text = "Rollback"
                 binding.btnRefund.isEnabled = true
-            }
-
-            state.canRefund -> {
+            } else if (state.canRefund) {
                 binding.btnRefund.text = "Refund"
                 binding.btnRefund.isEnabled = true
             }
-            state.saleFull?.sale?.status == SaleStatus.COMPLETED -> {
-                binding.btnRefund.isEnabled = false
-                viewModel.getStatus()
-            }
-
-            else -> {
-                binding.btnRefund.isEnabled = false
-            }
+        } else {
+            binding.btnVoid.visibility = View.VISIBLE
+            binding.btnRefund.text = "Refund"
+            binding.btnRefund.isEnabled = true
+            binding.btnVoid.isEnabled = true
         }
     }
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
+                binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
 
-                binding.progressBar.visibility =
-                    if (state.isLoading) View.VISIBLE else View.GONE
-
-                renderButton(state)
+                renderButtons(state)
 
                 state.saleFull?.let { full ->
                     val sale = full.sale
 
                     binding.tvDocumentId.text = sale.shortDocumentId
                     binding.tvTotal.text = "${sale.total} ${sale.currency}"
-                    binding.tvCash.text = sale.cashSum.toString()
-                    binding.tvCard.text = sale.cardSum.toString()
-                    binding.tvBonus.text = sale.bonusSum.toString()
-                    binding.tvCashier.text = sale.cashier
-                    binding.tvRrn.text = sale.rrn
+                    binding.tvCash.text = "Cash: ${sale.cashSum}"
+                    binding.tvCard.text = "Card: ${sale.cardSum}"
+                    binding.tvBonus.text = "Bonus: ${sale.bonusSum}"
+                    binding.tvCashier.text = "Cashier: ${sale.cashier}"
+                    binding.tvRrn.text = "RRN: ${sale.rrn ?: "-"}"
                     binding.tvDate.text = formatDate(sale.createdAt)
 
-                    binding.tvItems.text = full.items.joinToString("\n") {
-                        "${it.itemName} x${it.quantity} = ${it.sum}"
-                    }
+                    soldAdapter.submitList(state.updatedItems)
                 }
             }
         }

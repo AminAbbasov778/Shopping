@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+
 @HiltViewModel
 class ProductViewModel @Inject constructor(
     private val addProductUseCase: AddProductUseCase,
@@ -117,7 +119,7 @@ class ProductViewModel @Inject constructor(
             return
         }
 
-        if (purchasePrice > 0 && purchasePriceRounded >= salePrice) {
+        if (purchasePriceRounded > 0 && purchasePriceRounded >= salePrice) {
             _formState.update { it.copy(purchasePriceError = "Alış qiyməti satış qiymətindən kiçik olmalıdır") }
             return
         }

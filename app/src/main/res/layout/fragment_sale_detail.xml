@@ -97,10 +97,12 @@
                     android:textStyle="bold"
                     android:textColor="@color/md_primary"/>
 
-                <TextView
+                <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/tvItems"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     android:layout_marginTop="4dp"
                     android:textColor="@color/md_on_surface"/>
 
@@ -144,6 +146,19 @@
             app:strokeColor="?attr/colorError"
             app:cornerRadius="12dp"
             app:layout_constraintTop_toBottomOf="@id/btnReprint"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVoid"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="VOID"
+            android:textColor="?attr/colorError"
+            app:strokeColor="?attr/colorError"
+            app:cornerRadius="12dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/btnRefund"/>
 
         <ProgressBar
             android:id="@+id/progressBar"

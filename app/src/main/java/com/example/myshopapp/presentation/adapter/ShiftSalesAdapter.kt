@@ -44,21 +44,21 @@ class ShiftSalesAdapter(
 
         binding.tvShortDoc.text = "Çek: #${item.shortDocumentId}"
         binding.tvCashier.text = "• Kassir: ${item.cashier}"
-        binding.tvTotal.text = "%.2f %s".format(item.total, if(item.currency == "AZN") "₼" else item.currency)
+        binding.tvTotal.text = item.total.toString() + if(item.currency == "AZN")  "₼" else item.currency
 
         val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
         binding.tvTime.text = sdf.format(Date(item.createdAt))
 
         if (item.cashSum > 0.0) {
             binding.tvCashSum.visibility = View.VISIBLE
-            binding.tvCashSum.text = "Nağd: %.2f ₼".format(item.cashSum)
+            binding.tvCashSum.text = "Nağd: ${item.cashSum}"
         } else {
             binding.tvCashSum.visibility = View.GONE
         }
 
         if (item.cardSum > 0.0) {
             binding.tvCardSum.visibility = View.VISIBLE
-            binding.tvCardSum.text = "Kart: %.2f ₼".format(item.cardSum)
+            binding.tvCardSum.text = "Kart:${item.cardSum}"
         } else {
             binding.tvCardSum.visibility = View.GONE
         }
@@ -66,7 +66,7 @@ class ShiftSalesAdapter(
         if (item.bonusSum > 0.0) {
 
             binding.tvBonusSum.visibility = View.VISIBLE
-            binding.tvBonusSum.text = "Bonus: %.2f ₼".format(item.bonusSum)
+            binding.tvBonusSum.text = "Bonus: ${item.bonusSum}"
         } else {
 
 
@@ -77,7 +77,7 @@ class ShiftSalesAdapter(
 
 
             binding.tvChangeSum.visibility = View.VISIBLE
-            binding.tvChangeSum.text = "Qalıq pul: %.2f ₼".format(item.changeSum)
+            binding.tvChangeSum.text = "Qalıq pul: ${item.changeSum}"
         } else {
             binding.tvChangeSum.visibility = View.GONE
         }

@@ -6,7 +6,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleItemEntity
-import com.example.myshopapp.data.local.entity.SaleVatEntity
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.presentation.util.SaleStatus
 import kotlinx.coroutines.flow.Flow
@@ -14,15 +13,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SaleDao {
 
-
     @Insert
     suspend fun insertSale(sale: SaleEntity): Long
 
     @Insert
     suspend fun insertItems(items: List<SaleItemEntity>)
 
-    @Insert
-    suspend fun insertVat(vat: List<SaleVatEntity>)
+
 
     @Query("""
         UPDATE sales 
@@ -34,15 +31,24 @@ interface SaleDao {
         status: SaleStatus
     )
 
+    @Query("""
+        UPDATE sale_items 
+        SET quantity = :quantity 
+        WHERE id = :itemId AND saleDocumentId = :saleDocumentId
+    """)
+    suspend fun updateItemQuantity(
+        itemId: Long, quantity: Double, saleDocumentId: String
+    )
 
     @Transaction
     @Query("SELECT * FROM sales WHERE fullDocumentId = :qr LIMIT 1")
     suspend fun getSaleFullByQr(qr: String): SaleFull?
 
-
     @Transaction
     @Query("SELECT * FROM sales WHERE shiftKey = :shiftKey ORDER BY createdAt DESC")
     fun getShiftSalesFull(shiftKey: String): Flow<List<SaleFull>>
+
+    
 
     @Transaction
     @Query("""

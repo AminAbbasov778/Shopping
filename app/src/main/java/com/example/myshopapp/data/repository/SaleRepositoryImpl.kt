@@ -1,10 +1,8 @@
 package com.example.myshopapp.data.repository
 
-import android.util.Log
 import com.example.myshopapp.data.local.dao.SaleDao
 import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleItemEntity
-import com.example.myshopapp.data.local.entity.SaleVatEntity
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.data.remote.model.repsonse.LastDocumentResponse
 import com.example.myshopapp.data.remote.model.repsonse.deposit.DepositResponse
@@ -38,10 +36,17 @@ class SaleRepositoryImpl @Inject constructor(
         dao.updateStatus(documentId, status)
     }
 
+    override suspend fun updateQuantity(quantity: Double, saleDocumentId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
 
-    override suspend fun getLastDocument(): Result<LastDocumentResponse> = safeApiCall(
+   override suspend fun updateItemsQuantities(items: List<SaleItemEntity>, saleDocumentId: String): Result<Unit> = safeDbCall {
+        items.forEach { item ->
+            dao.updateItemQuantity(itemId = item.id, quantity = item.quantity, saleDocumentId = saleDocumentId)
+        }
+    }
 
-    ) {
+    override suspend fun getLastDocument(): Result<LastDocumentResponse> = safeApiCall {
         api.getLastDocument()
     }
 
@@ -58,8 +63,7 @@ class SaleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun submitSale(request: SaleRequest): Result<SaleResponse> = safeApiCall {
-        val response = api.submitSale(request)
-        response
+        api.submitSale(request)
     }
 
     override suspend fun moneyBack(request: MoneyBackRequest): Result<MoneyBackResponse> = safeApiCall {
@@ -70,24 +74,17 @@ class SaleRepositoryImpl @Inject constructor(
         api.printReceipt(printRequest)
     }
 
-
-
     override suspend fun saveSale(
         sale: SaleEntity,
         items: List<SaleItemEntity>,
-        vat: List<SaleVatEntity>
     ): Result<Unit> = safeDbCall {
         dao.insertSale(sale)
         dao.insertItems(items)
-        dao.insertVat(vat)
     }
 
     override suspend fun getSaleFullByQr(qr: String): Result<SaleFull?> = safeDbCall {
         dao.getSaleFullByQr(qr)
     }
-
-
-
 
     override fun getShiftSalesFull(shiftKey: String): Flow<Result<List<SaleFull>>> {
         return dao.getShiftSalesFull(shiftKey)

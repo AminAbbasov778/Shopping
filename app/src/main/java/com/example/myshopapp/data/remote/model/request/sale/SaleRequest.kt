@@ -26,7 +26,6 @@ data class SaleRequest(
     val items: List<Item>,
     @SerializedName("prepaymentSum")
     val prepaymentSum: Double,
-
     @SerializedName("sum")
     val sum: Double,
     @SerializedName("useTerminalBank")

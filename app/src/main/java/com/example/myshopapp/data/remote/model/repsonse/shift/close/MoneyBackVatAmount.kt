@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class MoneyBackVatAmount(
     @SerializedName("vatPercent")
-    val vatPercent: Int,
+    val vatPercent: Double,
     @SerializedName("vatSum")
-    val vatSum: Int
+    val vatSum: Double
 )

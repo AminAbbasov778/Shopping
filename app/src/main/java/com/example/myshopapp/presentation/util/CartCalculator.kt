@@ -1,5 +1,7 @@
 package com.example.myshopapp.presentation.util
 
+import com.example.myshopapp.data.local.entity.SaleFull
+import com.example.myshopapp.data.local.entity.SaleItemEntity
 import com.example.myshopapp.presentation.model.CartTotals
 import com.example.myshopapp.presentation.state.CartItem
 
@@ -9,7 +11,7 @@ object CartCalculator {
 
         val calculated = items.map { item ->
             val discountedPrice = (item.product.salePrice * (1.0 - item.discount / 100.0)).roundTo2()
-            val itemSum         = (discountedPrice * item.qty).roundTo2()
+            val itemSum   = (discountedPrice * item.qty).roundTo2()
             item.copy(discountedPrice = discountedPrice, itemSum = itemSum)
         }
 
@@ -42,6 +44,7 @@ object CartCalculator {
             }
 
             item.copy(discountedPrice = effectivePrice, itemSum = effectiveSum)
+
         }
 
         return CartTotals(
@@ -53,4 +56,6 @@ object CartCalculator {
             vatMap             = vatMap,
         )
     }
+
+
 }

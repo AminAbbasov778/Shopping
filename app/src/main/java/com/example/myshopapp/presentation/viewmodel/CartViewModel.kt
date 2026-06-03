@@ -15,6 +15,7 @@ import javax.inject.Inject
 class CartViewModel @Inject constructor() : ViewModel() {
 
     private val _rawItems = MutableStateFlow<List<CartItem>>(emptyList())
+     val rawItems = _rawItems.asStateFlow()
 
     private val _state = MutableStateFlow(CartUiState())
     val state = _state.asStateFlow()
@@ -32,6 +33,7 @@ class CartViewModel @Inject constructor() : ViewModel() {
         }
 
         _rawItems.value = list
+        
         calculate()
     }
 
@@ -69,8 +71,10 @@ class CartViewModel @Inject constructor() : ViewModel() {
     fun clearCart() {
         cartDiscountPercent = 0.0
         _rawItems.value = emptyList()
+
         _state.update { CartUiState() }
     }
+
 
     private fun calculate() {
         val totals = CartCalculator.calculate(_rawItems.value, cartDiscountPercent)

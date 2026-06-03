@@ -46,12 +46,12 @@ class ProductAdapter(
         val qty = item.qty
 
         holder.binding.tvName.text = product.name
-        holder.binding.tvPrice.text = "%.2f ₼".format(product.salePrice)
+        holder.binding.tvPrice.text = product.salePrice.toString()
 
         if (qty > 0) {
             holder.binding.tvQty.text = "Miqdar: ${qty.toInt()}"
             holder.binding.tvAmount.visibility = View.VISIBLE
-            holder.binding.tvAmount.text = "Cəmi: %.2f ₼".format(item.totalAmount)
+            holder.binding.tvAmount.text = item.totalAmount.toString()
         } else {
             holder.binding.tvQty.text = ""
             holder.binding.tvAmount.visibility = View.GONE

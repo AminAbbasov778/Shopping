@@ -2,7 +2,6 @@ package com.example.myshopapp.domain.repository
 
 import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleItemEntity
-import com.example.myshopapp.data.local.entity.SaleVatEntity
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.data.remote.model.repsonse.LastDocumentResponse
 import com.example.myshopapp.data.remote.model.repsonse.deposit.DepositResponse
@@ -26,15 +25,16 @@ interface SaleRepository {
     suspend fun saveSale(
         sale: SaleEntity,
         items: List<SaleItemEntity>,
-        vat: List<SaleVatEntity>
     ): Result<Unit>
 
     suspend fun updateStatus(documentId: String, status: SaleStatus) : Result<Unit>
 
-
+    suspend fun updateQuantity(  quantity: Double, saleDocumentId: String) : Result<Unit>
     suspend fun getLastDocument(
 
     ): Result<LastDocumentResponse>
+
+    suspend fun updateItemsQuantities(items: List<SaleItemEntity>, saleDocumentId: String): Result<Unit>
 
     suspend fun rollback(
         request: RollbackRequest

@@ -11,17 +11,21 @@ suspend fun <T> safeApiCall(
         if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
+                Log.d("TAG", "safeApiCall: $body")
 
 
                 Result.success(body)
             } else {
+                Log.d("TAG", "safeApiCall: Response body boşdur")
+
                 Result.failure(Exception("Response body boşdur"))
             }
         } else {
-
+            Log.d("TAG", "safeApiCall: Xəta kodu: ${response.code()} - ${response.message()}")
             Result.failure(Exception("Xəta kodu: ${response.code()} - ${response.message()}"))
         }
     } catch (e: Exception) {
+        Log.d("TAG", "safeApiCall: $e")
         Result.failure(e)
     }
 }

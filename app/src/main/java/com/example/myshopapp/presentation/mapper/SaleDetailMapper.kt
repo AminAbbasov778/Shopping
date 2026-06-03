@@ -1,12 +1,12 @@
 package com.example.myshopapp.presentation.mapper
 
-import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.data.remote.model.request.moneyback.Item
 import com.example.myshopapp.data.remote.model.request.moneyback.MoneyBackRequest
 import com.example.myshopapp.data.remote.model.request.moneyback.VatAmount as MoneyBackVatAmount
 import com.example.myshopapp.data.remote.model.request.rollback.RollbackRequest
 import com.example.myshopapp.data.remote.model.request.rollback.VatAmount as RollbackVatAmount
+import com.example.myshopapp.presentation.util.RefundTotals
 
 fun SaleFull.toRollbackRequest(): RollbackRequest =
     RollbackRequest(
@@ -22,37 +22,35 @@ fun SaleFull.toRollbackRequest(): RollbackRequest =
         parentDocument = sale.fullDocumentId,
         rrn            = sale.rrn,
         uuid           = sale.uuid,
-        vatAmounts     = vat.map {
-            RollbackVatAmount(vatPercent = it.vatPercent, vatSum = it.vatSum)
-        },
+        vatAmounts     = emptyList() // Əgər rollback API-si vat siyahısı istəyirsə bura ötürülə bilər
     )
 
-fun SaleFull.toMoneyBackRequest(): MoneyBackRequest =
+fun SaleFull.toMoneyBackRequest(refundTotals: RefundTotals): MoneyBackRequest =
     MoneyBackRequest(
         cashier        = sale.cashier,
         currency       = sale.currency,
-        sum            = sale.total,
-        cashSum        = sale.cashSum,
-        cashlessSum    = sale.cardSum,
-        bonusSum       = sale.bonusSum,
-        creditSum      = sale.creditSum,
-        prepaymentSum  = sale.prepaymentSum,
-        incomingSum    = sale.incomingSum,
+        sum            = refundTotals.totalRefundSum,
+        cashSum        = if (sale.cardSum > 0) 0.0 else refundTotals.totalRefundSum, // Ödəniş metoduna uyğun pul qaytarma
+        cashlessSum    = if (sale.cardSum > 0) refundTotals.totalRefundSum else 0.0,
+        bonusSum       = 0.0,
+        creditSum      = 0.0,
+        prepaymentSum  = 0.0,
+        incomingSum    = refundTotals.totalRefundSum,
         moneyBackType  = 0,
         parentDocument = sale.fullDocumentId,
-        items = items.map {
+        items = refundTotals.refundItems.map { refundItem ->
             Item(
-                itemCode         = it.itemCode,
-                itemName         = it.itemName,
+                itemCode         = refundItem.entity.itemCode,
+                itemName         = refundItem.entity.itemName,
                 itemCodeType     = 0,
-                itemQuantity     = it.quantity,
+                itemQuantity     = refundItem.refundQty,
                 itemQuantityType = 0,
-                itemPrice        = it.price,
-                itemSum          = it.sum,
-                itemVatPercent   = it.vatPercent,
+                itemPrice        = refundItem.effectivePrice,
+                itemSum          = refundItem.refundSum,
+                itemVatPercent   = refundItem.entity.vatPercent,
             )
         },
-        vatAmounts = vat.map {
-            MoneyBackVatAmount(vatPercent = it.vatPercent, vatSum = it.vatSum)
+        vatAmounts = refundTotals.vatMap.map { (vatPercent, vatSum) ->
+            MoneyBackVatAmount(vatPercent = vatPercent, vatSum = vatSum)
         },
     )

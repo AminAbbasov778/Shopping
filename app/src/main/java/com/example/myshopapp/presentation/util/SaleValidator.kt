@@ -2,6 +2,7 @@ package com.example.myshopapp.presentation.util
 
 import com.example.myshopapp.data.remote.model.request.sale.VatAmount
 import com.example.myshopapp.presentation.state.CartItem
+import kotlin.math.abs
 
 object SaleValidator {
 
@@ -10,19 +11,16 @@ object SaleValidator {
 
         if (name.length > 64) return "Kassir adı maksimum 64 simvol ola bilər"
 
-
         return null
     }
 
     fun validateCurrency(currency: String): String? {
         if (currency != "AZN") return "Valyuta yalnız AZN ola bilər"
-
         return null
     }
 
     fun validateItemName(name: String): String? {
         if (name.isBlank()) return "Məhsul adı boş ola bilməz"
-
 
         if (name.length > 255) return "Məhsul adı maksimum 255 simvol ola bilər: '$name'"
         return null
@@ -32,7 +30,6 @@ object SaleValidator {
         if (code.isBlank()) return "Məhsul kodu boş ola bilməz"
 
         if (code.length > 32) return "Məhsul kodu maksimum 32 simvol ola bilər: '$code'"
-
 
         return null
     }
@@ -55,10 +52,6 @@ object SaleValidator {
 
         if (qty > 99.999f) return "itemQuantity maksimum    99.999 ola bilər"
 
-
-        val rounded = Math.round(qty * 1000).toFloat() / 1000f
-
-        if (Math.abs(rounded - qty) > 0.0001f) return "itemQuantity maksimum 3 onluq dəqiqlik ola bilər"
         return null
     }
 
@@ -68,9 +61,9 @@ object SaleValidator {
 
         if (sum < 0) return "itemSum mənfi ola bilməz"
 
-        val expected = "%.2f".format(price * qty).toDouble()
+        val expected = (price * qty).toDouble()
 
-        if (Math.abs(expected - sum) > 0.01) return "itemSum ($sum) itemPrice×itemQuantity ($expected) ilə uyğun gəlmir"
+        if (abs(expected - sum) > 0.01) return "itemSum ($sum) itemPrice×itemQuantity ($expected) ilə uyğun gəlmir"
         return null
     }
 
@@ -94,7 +87,7 @@ object SaleValidator {
         if (marginPrice == null || marginPrice <= 0) return "Agro məhsul üçün itemMarginPrice mütləqdir və 0-dan böyük olmalıdır"
 
         if (marginSum == null || marginSum <= 0) return "Agro məhsul üçün itemMarginSum mütləqdir"
-        val expectedMarginSum = "%.2f".format(marginPrice * qty).toDouble()
+        val expectedMarginSum = (marginPrice * qty).toDouble()
 
         if (Math.abs(expectedMarginSum - marginSum) > 0.01) return "Agro: itemMarginSum ($marginSum) = itemMarginPrice×itemQuantity ($expectedMarginSum) olmalıdır"
         if (marginSum > itemSum) return "Agro: itemMarginSum ($marginSum) itemSum ($itemSum)-dən böyük ola bilməz"
@@ -125,7 +118,7 @@ object SaleValidator {
     ): String? {
         if (sum <= 0) return "Ümumi məbləğ (sum) 0-dan böyük olmalıdır"
         val parts =
-            "%.2f".format(cashSum + cashlessSum + bonusSum + creditSum + prepaymentSum).toDouble()
+            (cashSum + cashlessSum + bonusSum + creditSum + prepaymentSum).toDouble()
 
 
         if (Math.abs(parts - sum) > 0.01) return "sum ($sum) = cashSum + cashlessSum + bonusSum + creditSum + prepaymentSum ($parts) olmalıdır"
@@ -149,18 +142,20 @@ object SaleValidator {
 
             if (incomingSum < cashSum) return "incomingSum ($incomingSum) cashSum ($cashSum) dən kiçik ola bilməz"
 
-            val expectedChange = "%.2f".format(incomingSum - cashSum).toDouble()
+            val expectedChange =(incomingSum - cashSum).toDouble()
             if (Math.abs(expectedChange - changeSum) > 0.01) return "changeSum ($changeSum) = incomingSum - cashSum ($expectedChange) olmalıdır"
         }
         return null
     }
+
+
 
     fun validateVatAmounts(vatAmounts: List<VatAmount>, totalSum: Double): String? {
         if (vatAmounts.isEmpty()) return "vatAmounts boş ola bilməz"
 
         if (vatAmounts.size > 2) return "vatAmounts maksimum 2 element ola bilər"
 
-        val vatSumTotal = "%.2f".format(vatAmounts.sumOf { it.vatSum }).toDouble()
+        val vatSumTotal = (vatAmounts.sumOf { it.vatSum }).toDouble()
 
         if (Math.abs(vatSumTotal - totalSum) > 0.01) return "vatAmounts cəmi ($vatSumTotal) ümumi sum ($totalSum) ilə uyğun gəlmir"
 
@@ -169,6 +164,7 @@ object SaleValidator {
             val has18 = vatAmounts.any { it.vatPercent == 18.0 }
 
             val hasNull = vatAmounts.any { it.vatPercent == null }
+
             if (!has18 || !hasNull) return "2 elementli vatAmounts yalnız 18% + 0% (vatPercent=null) kombinasiyası ola bilər"
         }
         vatAmounts.forEach { v ->

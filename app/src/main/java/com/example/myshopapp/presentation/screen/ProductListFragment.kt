@@ -1,7 +1,6 @@
 package com.example.myshopapp.presentation.screen
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.myshopapp.util.LogTags
 import com.example.myshopapp.R
 import com.example.myshopapp.databinding.FragmentProductListBinding
 import com.example.myshopapp.presentation.adapter.ProductAdapter
@@ -28,8 +26,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
 
-    lateinit var  binding: FragmentProductListBinding
-
+    lateinit var binding: FragmentProductListBinding
 
 
     private lateinit var adapter: ProductAdapter
@@ -42,13 +39,12 @@ class ProductListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-     binding = FragmentProductListBinding.inflate(inflater, container, false)
+        binding = FragmentProductListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(LogTags.PRODUCT, "ProductListFragment: created")
 
         setupRecycler()
         observeUI()
@@ -56,7 +52,6 @@ class ProductListFragment : Fragment() {
         collectEvents(viewModel)
 
         binding.btnAddProduct.setOnClickListener {
-            Log.d(LogTags.PRODUCT, "Navigate AddProductFragment")
             findNavController().navigate(R.id.action_productListFragment_to_addProductFragment)
         }
     }

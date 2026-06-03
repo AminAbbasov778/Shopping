@@ -36,14 +36,13 @@ class LoginViewModel @Inject constructor(
                 .onSuccess { response ->
 
                     saveSessionUseCase(
-                        response.data.accessToken,
+                        "bos",
                         cashierName
                     )
 
                     _navigate.emit(Unit)
                 }
                 .onFailure {
-                    Log.e("LoginViewModel", "login: ${it.message}")
                     _loading.update { false }
                     emitError(it.message)
                 }

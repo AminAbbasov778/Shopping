@@ -16,7 +16,10 @@ data class SaleItemEntity(
     val itemCode: String,
     val itemName: String,
     val quantity: Double,
-    val price: Double,
+    val purchasePrice: Double,
+    val itemDiscountPercent : Double,
+    val isAgro: Boolean,
+    val salePrice: Double,
     val sum: Double,
-    val vatPercent: Double?
+    val vatPercent: Double?,
 )

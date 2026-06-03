@@ -12,9 +12,4 @@ data class SaleFull(
     )
     val items: List<SaleItemEntity>,
 
-    @Relation(
-        parentColumn = "documentId",
-        entityColumn = "saleDocumentId"
-    )
-    val vat: List<SaleVatEntity>
 )

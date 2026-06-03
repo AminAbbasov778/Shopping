@@ -15,7 +15,8 @@ import kotlin.jvm.java
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
+object
+NetworkModule {
 
 
     @Provides

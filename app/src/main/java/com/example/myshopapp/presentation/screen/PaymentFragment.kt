@@ -68,7 +68,7 @@ class PaymentFragment : Fragment() {
         binding.btnPay.setOnClickListener {
             val cart = cartViewModel.state.value
             val request = buildSaleRequest(cart, viewModel.state.value)
-            viewModel.submitSale(request, cart.items)
+            viewModel.submitSale(request,cartViewModel.rawItems.value ,cart.cartDiscountPercent)
         }
     }
 
@@ -82,25 +82,24 @@ class PaymentFragment : Fragment() {
                 findNavController().popBackStack(R.id.saleFragment2, false)
 
             }
-
-
         )
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
-                binding.tvTotal.text = "Cəmi: %.2f ₼".format(state.total)
+                binding.tvTotal.text = "Cəmi: ${state.total}"
 
-                binding.tvPaid.text = "Ödənilib: %.2f ₼".format(state.paid)
-                binding.tvRemaining.text = "Qalıq: %.2f ₼".format(state.remaining)
+                binding.tvPaid.text = "Ödənilib: ${state.paid}"
 
+                binding.tvRemaining.text = "Qalıq: ${state.remaining}"
 
-                binding.tvChange.text = "Qaytarılacaq: %.2f ₼".format(state.change)
+                binding.tvChange.text = "Qaytarılacaq: ${state.change}"
 
                 binding.btnPay.isEnabled = !state.isLoading
 
             }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -30,13 +30,11 @@ data class SaleEntity(
     val currency: String,
     val creditSum: Double,
     val prepaymentSum: Double,
-
     val incomingSum: Double,
+    val cartDiscount : Double,
     val changeSum: Double,
     val status: SaleStatus ,
-
     val total: Double,
-
     val cashSum: Double,
     val cardSum: Double,
     val bonusSum: Double,

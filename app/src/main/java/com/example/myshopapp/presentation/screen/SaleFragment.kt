@@ -93,9 +93,9 @@ class SaleFragment : Fragment() {
 
                 adapter.submitList(state.items)
 
-                binding.tvTotal.text = "Cəmi: ${"%.2f".format(state.total)} ₼"
+                binding.tvTotal.text = "Cəmi: ${state.total} ₼"
 
-                binding.tvDiscount.text = "Endirim: ${"%.2f".format(state.totalDiscount)} ₼"
+                binding.tvDiscount.text = "Endirim: ${state.totalDiscount} ₼"
 
                 val vatText = if (state.vatSummary.isEmpty()) {
                     "ƏDV: 0.00 ₼"
@@ -109,7 +109,7 @@ class SaleFragment : Fragment() {
                 if (state.cartDiscountAmount > 0.0) {
                     binding.tvCartDiscountAmount.visibility = View.VISIBLE
                     binding.tvCartDiscountAmount.text =
-                        "Ümumi endirim: –${"%.2f".format(state.cartDiscountAmount)} ₼"
+                        "Ümumi endirim: –${state.cartDiscountAmount} ₼"
                 } else {
                     binding.tvCartDiscountAmount.visibility = View.GONE
                 }

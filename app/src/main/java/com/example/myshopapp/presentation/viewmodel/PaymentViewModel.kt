@@ -8,7 +8,6 @@ import com.example.myshopapp.domain.usecase.SubmitSaleUseCase
 import com.example.myshopapp.presentation.base.BaseViewModel
 import com.example.myshopapp.presentation.mapper.toSaleEntity
 import com.example.myshopapp.presentation.mapper.toSaleItemEntities
-import com.example.myshopapp.presentation.mapper.toVatEntities
 import com.example.myshopapp.presentation.state.CartItem
 import com.example.myshopapp.presentation.state.PaymentUiState
 import com.example.myshopapp.presentation.util.validateFullSaleRequest
@@ -69,11 +68,11 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
-    fun submitSale(request: SaleRequest, cartItems: List<CartItem>) {
+    fun submitSale(request: SaleRequest, cart: List<CartItem>,cartDiscountPercent : Double) {
         val errors = validateFullSaleRequest(
             cashier = "",
             currency = CURRENCY,
-            cartItems = cartItems,
+            cartItems = cart,
             cashSum = request.cashSum,
             cashlessSum = request.cashlessSum,
             bonusSum = request.bonusSum,
@@ -126,14 +125,17 @@ class PaymentViewModel @Inject constructor(
 
             val shift = shiftResult.getOrThrow()
 
-            val saleEntity = response.toSaleEntity(shift.data.shiftOpenTime, name, request)
+            val saleEntity = response.toSaleEntity(
+                shift.data.shiftOpenTime,
+                name,
+                request,
+                cartDiscountPercent
+            )
 
-            val items = request.toSaleItemEntities(response.data.documentId)
+            val items = cart.map { it.toSaleItemEntities(response.data.documentId) }
 
 
-            val vat = request.toVatEntities(response.data.documentId)
-
-            val saveResult = saveSaleUseCase(saleEntity, items, vat)
+            val saveResult = saveSaleUseCase(saleEntity, items)
             _state.update { it.copy(isLoading = false) }
 
             if (saveResult.isSuccess) {
