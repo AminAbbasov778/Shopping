@@ -10,7 +10,7 @@ import com.example.myshopapp.data.local.entity.SaleItemEntity
 
 @Database(
     entities = [ProductEntity::class, SaleEntity::class, SaleItemEntity::class],
-    version = 5
+    version = 1
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao

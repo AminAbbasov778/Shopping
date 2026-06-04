@@ -33,11 +33,31 @@ interface SaleDao {
 
     @Query("""
         UPDATE sale_items 
-        SET quantity = :quantity 
+        SET quantity = :quantity, sum = :sum
         WHERE id = :itemId AND saleDocumentId = :saleDocumentId
     """)
-    suspend fun updateItemQuantity(
-        itemId: Long, quantity: Double, saleDocumentId: String
+    suspend fun updateItemQuantityAndSum(
+        itemId: Long, quantity: Double, sum: Double, saleDocumentId: String
+    )
+
+    @Query("""
+        UPDATE sales
+        SET total = :total,
+            cashSum = :cashSum,
+            cardSum = :cardSum,
+            bonusSum = :bonusSum,
+            creditSum = :creditSum,
+            prepaymentSum = :prepaymentSum
+        WHERE documentId = :documentId
+    """)
+    suspend fun updateSaleTotals(
+        documentId: String,
+        total: Double,
+        cashSum: Double,
+        cardSum: Double,
+        bonusSum: Double,
+        creditSum: Double,
+        prepaymentSum: Double
     )
 
     @Transaction

@@ -1,5 +1,6 @@
 package com.example.myshopapp.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.data.local.entity.SaleItemEntity
@@ -11,6 +12,7 @@ import com.example.myshopapp.domain.usecase.ReprintReceiptUseCase
 import com.example.myshopapp.domain.usecase.RollbackUseCase
 import com.example.myshopapp.domain.usecase.UpdateQuantityUseCase
 import com.example.myshopapp.domain.usecase.UpdateSaleStatusUseCase
+import com.example.myshopapp.domain.usecase.UpdateSaleTotalsUseCase
 import com.example.myshopapp.presentation.base.BaseViewModel
 import com.example.myshopapp.presentation.mapper.toMoneyBackRequest
 import com.example.myshopapp.presentation.mapper.toRollbackRequest
@@ -34,6 +36,7 @@ class SaleDetailViewModel @Inject constructor(
     private val reprintUseCase: ReprintReceiptUseCase,
     private val updateSaleStatusUseCase: UpdateSaleStatusUseCase,
     private val updateQuantityUseCase: UpdateQuantityUseCase,
+    private val updateSaleTotalsUseCase: UpdateSaleTotalsUseCase,
 ) : BaseViewModel() {
 
     private val _state = MutableStateFlow(SaleDetailUiState())
@@ -51,6 +54,8 @@ class SaleDetailViewModel @Inject constructor(
                 emitError(saleResult.exceptionOrNull()?.message)
                 return@launch
             }
+
+
 
             val saleFull = saleResult.getOrNull() ?: run {
                 _state.update { it.copy(isLoading = false) }
@@ -196,23 +201,46 @@ class SaleDetailViewModel @Inject constructor(
                         emitError(response.message)
                         return@onSuccess
                     }
+                    Log.d("refund", "refundUseCase success")
 
                     // 4. Statusun bazada yenilənməsi
                     updateSaleStatusUseCase(state.value.documentId, SaleStatus.REFUNDED).onSuccess {
 
-                        // 5. Room bazasında məhsulların yeni (qalan) miqdar və cəmlərini yeniləyirik
+                        // 5. Room bazasında məhsulların yeni (qalan) miqdar + sum yenilənir
                         updateQuantityUseCase(refundTotals.remainingItems, saleFull.sale.documentId)
 
-                        // 6. UI State və daxili dəyişənləri sinxronlaşdırırıq
+                        // 6. Hər ödəniş metodunu orijinal nisbətə proporsional azaldırıq
+                        val refundRatio      = if (saleFull.sale.total > 0) refundTotals.totalRefundSum / saleFull.sale.total else 0.0
+                        val newTotal         = (saleFull.sale.total        - refundTotals.totalRefundSum).roundTo2()
+                        val newCashSum       = (saleFull.sale.cashSum      - (saleFull.sale.cashSum      * refundRatio).roundTo2()).roundTo2()
+                        val newCardSum       = (saleFull.sale.cardSum      - (saleFull.sale.cardSum      * refundRatio).roundTo2()).roundTo2()
+                        val newBonusSum      = (saleFull.sale.bonusSum     - (saleFull.sale.bonusSum     * refundRatio).roundTo2()).roundTo2()
+                        val newCreditSum     = (saleFull.sale.creditSum    - (saleFull.sale.creditSum    * refundRatio).roundTo2()).roundTo2()
+                        val newPrepaySum     = (saleFull.sale.prepaymentSum- (saleFull.sale.prepaymentSum* refundRatio).roundTo2()).roundTo2()
+
+                        updateSaleTotalsUseCase(
+                            documentId    = saleFull.sale.documentId,
+                            total         = newTotal,
+                            cashSum       = newCashSum,
+                            cardSum       = newCardSum,
+                            bonusSum      = newBonusSum,
+                            creditSum     = newCreditSum,
+                            prepaymentSum = newPrepaySum
+                        )
+
+                        // 7. UI State sinxronlaşdırılır
                         _state.update { s ->
                             s.copy(
                                 isLoading = false,
                                 saleFull = saleFull.copy(
                                     sale = saleFull.sale.copy(
-                                        status = SaleStatus.REFUNDED,
-                                        total = (saleFull.sale.total - refundTotals.totalRefundSum).roundTo2(),
-                                        cardSum = if (saleFull.sale.cardSum > 0) (saleFull.sale.cardSum - refundTotals.totalRefundSum).roundTo2() else saleFull.sale.cardSum,
-                                        cashSum = if (saleFull.sale.cardSum == 0.0) (saleFull.sale.cashSum - refundTotals.totalRefundSum).roundTo2() else saleFull.sale.cashSum
+                                        status        = SaleStatus.REFUNDED,
+                                        total         = newTotal,
+                                        cashSum       = newCashSum,
+                                        cardSum       = newCardSum,
+                                        bonusSum      = newBonusSum,
+                                        creditSum     = newCreditSum,
+                                        prepaymentSum = newPrepaySum
                                     ),
                                     items = refundTotals.remainingItems
                                 ),

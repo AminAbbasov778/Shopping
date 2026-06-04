@@ -36,6 +36,16 @@ interface SaleRepository {
 
     suspend fun updateItemsQuantities(items: List<SaleItemEntity>, saleDocumentId: String): Result<Unit>
 
+    suspend fun updateSaleTotals(
+        documentId: String,
+        total: Double,
+        cashSum: Double,
+        cardSum: Double,
+        bonusSum: Double,
+        creditSum: Double,
+        prepaymentSum: Double
+    ): Result<Unit>
+
     suspend fun rollback(
         request: RollbackRequest
     ): Result<RollbackResponse>

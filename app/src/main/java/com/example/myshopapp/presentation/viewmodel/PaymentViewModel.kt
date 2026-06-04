@@ -1,5 +1,6 @@
 package com.example.myshopapp.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.myshopapp.domain.usecase.GetCashierNameUseCase
 import com.example.myshopapp.domain.usecase.GetShiftUseCase
@@ -94,6 +95,7 @@ class PaymentViewModel @Inject constructor(
 
             val name = getCashierNameUseCase() ?: return@launch
 
+            Log.d("request", "submitSale: $request")
             val submitResult = submitSaleUseCase(request.copy(cashier = name))
             val submitResponse = submitResult.getOrNull()
 

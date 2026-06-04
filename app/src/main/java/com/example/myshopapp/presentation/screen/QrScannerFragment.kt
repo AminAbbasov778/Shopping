@@ -50,7 +50,7 @@ class QrScannerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         findNavController().navigate(
             R.id.action_qrScannerFragment_to_saleDetailFragment,
-            bundleOf("documentId" to "44R3GzGnvZmBARH4Y7K5DihrC36zU3CTC5UpMLyH8U7V")
+            bundleOf("documentId" to "bQZBrHmogofngytZCesKLf15tfhFBLXwcPHA7KMqgPb")
         )
 
         qrScannerManager = QrScannerManager(requireContext()) { qrCode ->

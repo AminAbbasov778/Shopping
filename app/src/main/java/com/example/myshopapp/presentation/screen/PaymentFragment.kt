@@ -68,7 +68,7 @@ class PaymentFragment : Fragment() {
         binding.btnPay.setOnClickListener {
             val cart = cartViewModel.state.value
             val request = buildSaleRequest(cart, viewModel.state.value)
-            viewModel.submitSale(request,cartViewModel.rawItems.value ,cart.cartDiscountPercent)
+            viewModel.submitSale(request,cart.items ,cart.cartDiscountPercent)
         }
     }
 

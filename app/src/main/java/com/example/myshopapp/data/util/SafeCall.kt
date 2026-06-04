@@ -16,11 +16,22 @@ suspend fun <T> safeApiCall(
 
                 Result.success(body)
             } else {
+
                 Log.d("TAG", "safeApiCall: Response body boşdur")
 
                 Result.failure(Exception("Response body boşdur"))
             }
         } else {
+            val errorBody = response.errorBody()?.string()
+
+            Log.e(
+                "TAG",
+                """
+    Code: ${response.code()}
+    Message: ${response.message()}
+    ErrorBody: $errorBody
+    """.trimIndent()
+            )
             Log.d("TAG", "safeApiCall: Xəta kodu: ${response.code()} - ${response.message()}")
             Result.failure(Exception("Xəta kodu: ${response.code()} - ${response.message()}"))
         }

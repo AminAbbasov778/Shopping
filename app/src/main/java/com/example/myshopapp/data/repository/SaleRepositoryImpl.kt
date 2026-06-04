@@ -1,5 +1,6 @@
 package com.example.myshopapp.data.repository
 
+import android.util.Log
 import com.example.myshopapp.data.local.dao.SaleDao
 import com.example.myshopapp.data.local.entity.SaleEntity
 import com.example.myshopapp.data.local.entity.SaleItemEntity
@@ -40,10 +41,27 @@ class SaleRepositoryImpl @Inject constructor(
         return Result.success(Unit)
     }
 
-   override suspend fun updateItemsQuantities(items: List<SaleItemEntity>, saleDocumentId: String): Result<Unit> = safeDbCall {
+    override suspend fun updateItemsQuantities(items: List<SaleItemEntity>, saleDocumentId: String): Result<Unit> = safeDbCall {
         items.forEach { item ->
-            dao.updateItemQuantity(itemId = item.id, quantity = item.quantity, saleDocumentId = saleDocumentId)
+            dao.updateItemQuantityAndSum(
+                itemId = item.id,
+                quantity = item.quantity,
+                sum = item.sum,
+                saleDocumentId = saleDocumentId
+            )
         }
+    }
+
+    override suspend fun updateSaleTotals(
+        documentId: String,
+        total: Double,
+        cashSum: Double,
+        cardSum: Double,
+        bonusSum: Double,
+        creditSum: Double,
+        prepaymentSum: Double
+    ): Result<Unit> = safeDbCall {
+        dao.updateSaleTotals(documentId, total, cashSum, cardSum, bonusSum, creditSum, prepaymentSum)
     }
 
     override suspend fun getLastDocument(): Result<LastDocumentResponse> = safeApiCall {
@@ -59,6 +77,8 @@ class SaleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun rollback(request: RollbackRequest): Result<RollbackResponse> = safeApiCall {
+        Log.d("TAG", "rollback: $request")
+
         api.rollback(request)
     }
 
@@ -67,6 +87,7 @@ class SaleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun moneyBack(request: MoneyBackRequest): Result<MoneyBackResponse> = safeApiCall {
+        Log.d("TAG", "moneyBack: $request")
         api.moneyBack(request)
     }
 

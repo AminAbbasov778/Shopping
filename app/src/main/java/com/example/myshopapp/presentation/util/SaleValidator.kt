@@ -1,5 +1,6 @@
 package com.example.myshopapp.presentation.util
 
+import android.util.Log
 import com.example.myshopapp.data.remote.model.request.sale.VatAmount
 import com.example.myshopapp.presentation.state.CartItem
 import kotlin.math.abs
@@ -83,6 +84,7 @@ object SaleValidator {
         creditSum: Double,
         prepaymentSum: Double,
     ): String? {
+        Log.d("validateAgroItem", "isAgro: $isAgro, marginPrice: $marginPrice, marginSum: $marginSum, itemSum: $itemSum, qty: $qty, creditSum: $creditSum, prepaymentSum: $prepaymentSum")
         if (!isAgro) return null
         if (marginPrice == null || marginPrice <= 0) return "Agro məhsul üçün itemMarginPrice mütləqdir və 0-dan böyük olmalıdır"
 
