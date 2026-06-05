@@ -4,9 +4,8 @@ import android.util.Log
 import com.example.myshopapp.data.local.entity.SaleFull
 import com.example.myshopapp.data.remote.model.request.moneyback.Item
 import com.example.myshopapp.data.remote.model.request.moneyback.MoneyBackRequest
-import com.example.myshopapp.data.remote.model.request.moneyback.VatAmount as MoneyBackVatAmount
+import com.example.myshopapp.data.remote.model.request.moneyback.VatAmount
 import com.example.myshopapp.data.remote.model.request.rollback.RollbackRequest
-import com.example.myshopapp.data.remote.model.request.rollback.VatAmount as RollbackVatAmount
 import com.example.myshopapp.presentation.util.RefundTotals
 import com.example.myshopapp.presentation.util.roundTo2
 
@@ -56,25 +55,28 @@ fun SaleFull.toMoneyBackRequest(refundTotals: RefundTotals): MoneyBackRequest {
             Log.d("MoneyBackRequest", "refundItem: $refundItem  ,check ${if(refundItem.entity.vatPercent == 0.0) null  else refundItem.entity.vatPercent}")
 
             Item(
-                itemCode         = refundItem.entity.itemCode,
-                itemName         = refundItem.entity.itemName,
-                itemCodeType     = 0,
-                itemQuantity     = refundItem.refundQty,
+                itemCode = refundItem.entity.itemCode,
+                itemName = refundItem.entity.itemName,
+                itemCodeType = 0,
+                itemQuantity = refundItem.refundQty,
                 itemQuantityType = 0,
-                itemPrice        = refundItem.effectivePrice,
-                itemSum          = refundItem.refundSum,
-                itemVatPercent   = if(refundItem.entity.vatPercent == 0.0 && refundItem.entity.isAgro) 18.0  else if(refundItem.entity.vatPercent == 0.0) null else refundItem.entity.vatPercent  ,
+                itemPrice = refundItem.refundNetUnitPrice,
+                itemSum = refundItem.refundSum,
+                itemMarginSum = if(refundItem.entity.isAgro)  refundItem.entity.purchasePrice * refundItem.refundQty  else 0.0,
+                itemMarginPrice = if(refundItem.entity.isAgro)  refundItem.entity.purchasePrice else 0.0 ,
+                itemVatPercent = if (refundItem.entity.vatPercent == 0.0 && refundItem.entity.isAgro) 18.0 else if (refundItem.entity.vatPercent == 0.0) null else refundItem.entity.vatPercent,
             )
         },
 
         vatAmounts = refundTotals.vatMap.map { (vatPercent, vatSum) ->
 
             if (vatPercent == 0.0) {
-                MoneyBackVatAmount(
+                VatAmount(
+                    vatPercent = null,
                     vatSum = vatSum
                 )
             } else {
-                MoneyBackVatAmount(
+                VatAmount(
                     vatPercent = vatPercent,
                     vatSum = vatSum
                 )

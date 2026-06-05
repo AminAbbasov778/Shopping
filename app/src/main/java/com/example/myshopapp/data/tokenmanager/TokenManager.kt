@@ -21,11 +21,14 @@ object TokenManager {
 
         if (cachedToken != null && (currentTime - lastTime) < 50_000) {
 
+            Log.d("TAG", "OLD ${  Triple(cachedToken!!, lastDt, lastNonce)}")
+
             return Triple(cachedToken!!, lastDt, lastNonce)
         }
 
         val dt = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
             .format(Date())
+
 
 
         val nonce = UUID.randomUUID()
@@ -40,6 +43,8 @@ object TokenManager {
 
         lastDt = dt
         lastNonce = nonce
+
+        Log.d("TAG", " New ${Triple(token, dt, nonce)}")
 
         return Triple(token, dt, nonce)
     }

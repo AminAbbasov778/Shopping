@@ -83,6 +83,7 @@ class SaleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun submitSale(request: SaleRequest): Result<SaleResponse> = safeApiCall {
+        Log.d("TAG", "submitSale: $request")
         api.submitSale(request)
     }
 

@@ -1,13 +1,12 @@
 package com.example.myshopapp.presentation.util
 
 import com.example.myshopapp.data.local.entity.SaleItemEntity
-import com.example.myshopapp.presentation.util.roundTo2
 
 data class RefundItemDetails(
     val entity: SaleItemEntity,
     val refundQty: Double,
     val refundSum: Double,
-    val effectivePrice: Double
+    val refundNetUnitPrice: Double,
 )
 
 data class RefundTotals(
@@ -24,79 +23,128 @@ object SaleRefundCalculator {
         updatedItems: List<SaleItemEntity>,
         cartDiscountPercent: Double
     ): RefundTotals {
-        
-        val refundItemsList = mutableListOf<RefundItemDetails>()
-        val remainingItemsList = mutableListOf<SaleItemEntity>()
-        
-        var totalRefundSubtotal = 0.0
 
-        // 1. Qaytarılan və Qalan miqdarları ayırırıq, ilkin cəmləri hesablayırıq
+        val refundItems = mutableListOf<RefundItemDetails>()
+        val remainingItems = mutableListOf<SaleItemEntity>()
+
+        var refundBeforeCartDiscount = 0.0
+
+        // 1. Refund və qalan məhsullar
         updatedItems.forEach { updated ->
-            val original = originalItems.find { it.id == updated.id } ?: return@forEach
-            val refundQty = (original.quantity - updated.quantity).roundTo2()
 
-            // Əgər bu məhsuldan geri qaytarılan miqdar varsa
+            val original =
+                originalItems.find { it.id == updated.id } ?: return@forEach
+
+            val refundQty =
+                (original.quantity - updated.quantity).roundTo2()
+
             if (refundQty > 0) {
-                val discountedPrice = (updated.salePrice * (1.0 - updated.itemDiscountPercent / 100.0)).roundTo2()
-                val refundSum = (discountedPrice * refundQty).roundTo2()
-                totalRefundSubtotal += refundSum
 
-                refundItemsList.add(
+                val unitPriceAfterItemDiscount =
+                    (updated.salePrice *
+                            (1.0 - updated.itemDiscountPercent / 100.0))
+                        .roundTo2()
+
+                val refundItemAmount =
+                    (unitPriceAfterItemDiscount * refundQty).roundTo2()
+
+                refundBeforeCartDiscount += refundItemAmount
+
+                refundItems.add(
                     RefundItemDetails(
                         entity = updated,
                         refundQty = refundQty,
-                        refundSum = refundSum,
-                        effectivePrice = discountedPrice
+                        refundSum = refundItemAmount,
+                        refundNetUnitPrice = unitPriceAfterItemDiscount
                     )
                 )
             }
 
-            // Room-da qalacaq yeni siyahı (yenilənmiş sum ilə)
-            val newRemainingSum = (updated.quantity * (updated.salePrice * (1.0 - updated.itemDiscountPercent / 100.0)).roundTo2()).roundTo2()
-            remainingItemsList.add(
+            val remainingItemAmount =
+                (
+                        updated.quantity *
+                                (
+                                        updated.salePrice *
+                                                (1.0 - updated.itemDiscountPercent / 100.0)
+                                        ).roundTo2()
+                        ).roundTo2()
+
+            remainingItems.add(
                 updated.copy(
                     quantity = updated.quantity,
-                    sum = newRemainingSum
+                    sum = remainingItemAmount
                 )
             )
         }
 
-        // 2. Kassa endiriminin proporsional nisbəti
-        val cartDiscountAmount = (totalRefundSubtotal * cartDiscountPercent / 100.0).roundTo2()
-        val totalRefundSum = (totalRefundSubtotal - cartDiscountAmount).roundTo2()
-        val discountRatio = if (totalRefundSubtotal > 0) cartDiscountAmount / totalRefundSubtotal else 0.0
+        // 2. Cart discount
+        val cartDiscountAmount =
+            (refundBeforeCartDiscount * cartDiscountPercent / 100.0).roundTo2()
 
-        // 3. Fiskal ƏDV (VAT) xəritəsinin hesablanması
+        val totalRefundAmount =
+            (refundBeforeCartDiscount - cartDiscountAmount).roundTo2()
+
+        val cartDiscountRatio =
+            if (refundBeforeCartDiscount > 0)
+                cartDiscountAmount / refundBeforeCartDiscount
+            else 0.0
+
+        // 3. VAT map
         val vatMap = mutableMapOf<Double?, Double>()
 
-        val finalRefundItems = refundItemsList.map { item ->
-            val effectiveSum = (item.refundSum * (1.0 - discountRatio)).roundTo2()
-            val finalEffectivePrice = if (item.refundQty > 0) (effectiveSum / item.refundQty).roundTo2() else item.effectivePrice
+        val finalRefundItems = refundItems.map { item ->
+
+            val refundNetAmount =
+                (item.refundSum * (1.0 - cartDiscountRatio)).roundTo2()
+
+            val refundNetUnitPrice =
+                if (item.refundQty > 0)
+                    (refundNetAmount / item.refundQty).roundTo2()
+                else
+                    item.refundNetUnitPrice
 
             if (item.entity.isAgro) {
-                // Agro məhsul: Alış qiyməti hissəsi ƏDV-siz (null), qalan marja hissəsi 18% ƏDV
-                val purchaseRatio = if (item.refundSum > 0) {
-                    (item.entity.purchasePrice * item.refundQty).roundTo2() / item.refundSum
-                } else 0.0
 
-                val purchasePart = (effectiveSum * purchaseRatio).roundTo2()
-                val marginPart = (effectiveSum - purchasePart).roundTo2()
+                val purchaseRatio =
+                    if (item.refundSum > 0)
+                        (item.entity.purchasePrice * item.refundQty).roundTo2() /
+                                item.refundSum
+                    else 0.0
 
-                vatMap[null] = ((vatMap[null] ?: 0.0) + purchasePart).roundTo2()
-                vatMap[18.0] = ((vatMap[18.0] ?: 0.0) + marginPart).roundTo2()
+                val purchaseAmount =
+                    (refundNetAmount * purchaseRatio).roundTo2()
+
+                val marginAmount =
+                    (refundNetAmount - purchaseAmount).roundTo2()
+
+                vatMap[null] =
+                    ((vatMap[null] ?: 0.0) + purchaseAmount).roundTo2()
+
+                vatMap[18.0] =
+                    ((vatMap[18.0] ?: 0.0) + marginAmount).roundTo2()
+
             } else {
-                // Normal məhsul
-                val key = if (item.entity.vatPercent == 0.0) null else item.entity.vatPercent
-                vatMap[key] = ((vatMap[key] ?: 0.0) + effectiveSum).roundTo2()
+
+                val vatKey =
+                    if (item.entity.vatPercent == 0.0)
+                        null
+                    else
+                        item.entity.vatPercent
+
+                vatMap[vatKey] =
+                    ((vatMap[vatKey] ?: 0.0) + refundNetAmount).roundTo2()
             }
 
-            item.copy(effectivePrice = finalEffectivePrice, refundSum = effectiveSum)
+            item.copy(
+                refundSum = refundNetAmount,
+                refundNetUnitPrice = refundNetUnitPrice
+            )
         }
 
         return RefundTotals(
             refundItems = finalRefundItems,
-            remainingItems = remainingItemsList,
-            totalRefundSum = totalRefundSum,
+            remainingItems = remainingItems,
+            totalRefundSum = totalRefundAmount,
             vatMap = vatMap
         )
     }
