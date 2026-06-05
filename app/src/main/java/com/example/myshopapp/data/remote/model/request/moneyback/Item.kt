@@ -8,6 +8,11 @@ data class Item(
     val itemCode: String,
     @SerializedName("itemCodeType")
     val itemCodeType: Int,
+
+    @SerializedName("itemMarginPrice")
+    val itemMarginPrice: Double,
+    @SerializedName("itemMarginSum")
+    val itemMarginSum: Double,
     @SerializedName("itemName")
     val itemName: String,
     @SerializedName("itemPrice")

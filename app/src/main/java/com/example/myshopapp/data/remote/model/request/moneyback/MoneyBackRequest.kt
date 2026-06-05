@@ -23,7 +23,6 @@ data class MoneyBackRequest(
     @SerializedName("moneyBackType")
     val moneyBackType: Int,
     @SerializedName("parentDocument")
-
     val parentDocument: String,
     @SerializedName("prepaymentSum")
     val prepaymentSum: Double,
