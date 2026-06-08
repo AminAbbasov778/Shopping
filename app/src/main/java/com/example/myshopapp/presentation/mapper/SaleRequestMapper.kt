@@ -1,5 +1,6 @@
 package com.example.myshopapp.presentation.mapper
 
+import android.util.Log
 import com.example.myshopapp.data.remote.model.request.sale.VatAmount
 import com.example.myshopapp.presentation.state.CartUiState
 import com.example.myshopapp.presentation.state.PaymentUiState
@@ -8,6 +9,9 @@ import com.example.myshopapp.util.Constants.CURRENCY
 import com.example.shopapp.data.remote.model.request.sale.SaleRequest
 
 fun buildSaleRequest(cart: CartUiState, payment: PaymentUiState): SaleRequest {
+
+    Log.d("TAG", "5  cart = ${cart} payment = ${payment} ")
+
 
     val cash = payment.cash.toDoubleOrNull()?.roundTo2() ?: 0.0
     val card = payment.card.toDoubleOrNull()?.roundTo2() ?: 0.0
@@ -25,6 +29,10 @@ fun buildSaleRequest(cart: CartUiState, payment: PaymentUiState): SaleRequest {
     val cartSize = cart.items.size
     val items = cart.items.map { it.toRequestItem(credit, cartSize) }
     val vatAmounts = buildVatAmountsFromSummary(cart.vatSummary)
+
+    Log.e("TAG", "saleRequest:  sum = ${totalSum} cashSum = ${cashSum} card = ${card} bonus = ${bonus} credit = ${credit} prepayment = ${prepayment}, vatAmounts = ${vatAmounts}")
+
+
 
     return SaleRequest(
         cashier = "",

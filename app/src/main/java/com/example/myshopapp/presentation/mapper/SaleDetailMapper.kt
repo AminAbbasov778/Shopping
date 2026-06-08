@@ -6,11 +6,28 @@ import com.example.myshopapp.data.remote.model.request.moneyback.Item
 import com.example.myshopapp.data.remote.model.request.moneyback.MoneyBackRequest
 import com.example.myshopapp.data.remote.model.request.moneyback.VatAmount
 import com.example.myshopapp.data.remote.model.request.rollback.RollbackRequest
+import com.example.myshopapp.presentation.util.CartCalculator
 import com.example.myshopapp.presentation.util.RefundTotals
 import com.example.myshopapp.presentation.util.roundTo2
 
-fun SaleFull.toRollbackRequest(): RollbackRequest =
-    RollbackRequest(
+fun SaleFull.toRollbackRequest(): RollbackRequest {
+
+    val vatMap = mutableMapOf<Double?, Double>()
+
+    items.forEach { item ->
+        if (item.isAgro) {
+            val purchasePart = (item.purchasePrice * item.quantity).roundTo2()
+            val marginPart   = (item.sum - purchasePart).roundTo2()
+
+            vatMap[null] = ((vatMap[null] ?: 0.0) + purchasePart).roundTo2()
+            vatMap[18.0] = ((vatMap[18.0] ?: 0.0) + marginPart).roundTo2()
+        } else {
+            val vatKey = if (item.vatPercent == 0.0) null else item.vatPercent
+            vatMap[vatKey] = ((vatMap[vatKey] ?: 0.0) + item.sum).roundTo2()
+        }
+    }
+
+    return RollbackRequest(
         cashier        = sale.cashier,
         currency       = sale.currency,
         sum            = sale.total,
@@ -23,8 +40,11 @@ fun SaleFull.toRollbackRequest(): RollbackRequest =
         parentDocument = sale.fullDocumentId,
         rrn            = sale.rrn,
         uuid           = sale.uuid,
-        vatAmounts     = emptyList() // Əgər rollback API-si vat siyahısı istəyirsə bura ötürülə bilər
+        vatAmounts    = vatMap.map { (vatPercent, vatSum) ->
+            com.example.myshopapp.data.remote.model.request.rollback.VatAmount(vatPercent = vatPercent, vatSum = vatSum)
+        },
     )
+}
 
 fun SaleFull.toMoneyBackRequest(refundTotals: RefundTotals): MoneyBackRequest {
     // Orijinal ödəniş metodlarına proporsional olaraq refund məbləğini böləcəyik.
@@ -62,8 +82,8 @@ fun SaleFull.toMoneyBackRequest(refundTotals: RefundTotals): MoneyBackRequest {
                 itemQuantityType = 0,
                 itemPrice = refundItem.refundNetUnitPrice,
                 itemSum = refundItem.refundSum,
-                itemMarginSum = if(refundItem.entity.isAgro)  refundItem.entity.purchasePrice * refundItem.refundQty  else 0.0,
-                itemMarginPrice = if(refundItem.entity.isAgro)  refundItem.entity.purchasePrice else 0.0 ,
+                itemMarginSum = if(refundItem.entity.isAgro)  (refundItem.refundNetUnitPrice -  refundItem.entity.purchasePrice) * refundItem.refundQty else 0.0,
+                itemMarginPrice = if(refundItem.entity.isAgro) refundItem.refundNetUnitPrice -  refundItem.entity.purchasePrice   else 0.0 ,
                 itemVatPercent = if (refundItem.entity.vatPercent == 0.0 && refundItem.entity.isAgro) 18.0 else if (refundItem.entity.vatPercent == 0.0) null else refundItem.entity.vatPercent,
             )
         },

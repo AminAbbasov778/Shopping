@@ -8,7 +8,9 @@ data class SaleDetailUiState(
     val saleFull: SaleFull? = null,
     val documentId: String = "",
     val updatedItems: List<SaleItemEntity> = emptyList(),
+    val isCashless: Boolean = false,
     val canRollback: Boolean = false,
     val canRefund: Boolean = false,
-    val isCashless: Boolean = false
+
+    val showRollbackWarningDialog: Boolean = false,
 )

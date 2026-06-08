@@ -1,5 +1,6 @@
 package com.example.myshopapp.presentation.util
 
+import android.util.Log
 import com.example.myshopapp.presentation.model.CartTotals
 import com.example.myshopapp.presentation.state.CartItem
 
@@ -7,7 +8,11 @@ object CartCalculator {
 
     fun calculate(items: List<CartItem>, cartDiscountPercent: Double): CartTotals {
 
+        Log.d("TAG", "1 calculate: $items")
+
+
         val itemsWithItemDiscount = items.map { item ->
+            Log.d("TAG", "2 calculate: $item")
 
             val unitPrice =
                 (item.product.salePrice * (1.0 - item.discount / 100.0)).roundTo2()
@@ -50,14 +55,10 @@ object CartCalculator {
 
             if (item.product.isAgro) {
 
-                val purchaseRatio =
-                    if (item.itemSum > 0)
-                        (item.product.purchasePrice * item.qty).roundTo2() /
-                                item.itemSum
-                    else 0.0
+
 
                 val purchasePart =
-                    (itemTotalAfterCartDiscount * purchaseRatio).roundTo2()
+                    (item.product.purchasePrice * item.qty ).roundTo2()
 
                 val marginPart =
                     (itemTotalAfterCartDiscount - purchasePart).roundTo2()
@@ -79,11 +80,14 @@ object CartCalculator {
                 vatMap[vatKey] =
                     ((vatMap[vatKey] ?: 0.0) + itemTotalAfterCartDiscount).roundTo2()
             }
+            Log.d("TAG", "3  discountedPrice = ${unitPriceAfterCartDiscount} itemSum = ${itemTotalAfterCartDiscount} ")
+
 
             item.copy(
                 discountedPrice = unitPriceAfterCartDiscount,
                 itemSum = itemTotalAfterCartDiscount
             )
+
         }
 
         return CartTotals(

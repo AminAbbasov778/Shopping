@@ -4,63 +4,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="3dp"
-    app:cardBackgroundColor="@color/md_surface"
+    android:layout_marginVertical="4dp" app:cardBackgroundColor="@color/md_surface"
     app:cardCornerRadius="16dp"
-    app:strokeColor="@color/md_tertiary"
-    app:strokeWidth="1dp">
+    app:strokeColor="@color/md_secondary" app:strokeWidth="1dp">
 
     <LinearLayout
         android:orientation="vertical"
-        android:padding="10dp"
-        android:layout_width="match_parent"
+        android:padding="12dp" android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center_vertical">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Product"
+                android:textStyle="bold"
+                android:textColor="@color/md_primary"
+                android:textSize="18sp" />
 
-
-        <TextView
-            android:id="@+id/tvName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Product"
-            android:textStyle="bold"
-            android:textColor="@color/md_primary"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/tvPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20.dp"
-            android:text="Price x Qty"
-            android:textColor="@color/md_secondary"
-            android:textSize="16sp" />
-
-    </LinearLayout>
-
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp" android:text="Price x Qty"
+                android:textColor="@color/md_secondary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingTop="5.dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMinus"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="48dp"
-                android:text="-"
-                android:textSize="16sp"
-                app:cornerRadius="8dp"/>
+            android:paddingTop="8dp"> <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMinus"
+            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:text="-"
+            android:textColor="@color/md_primary" app:backgroundTint="@color/md_background" android:textSize="18sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"/>
 
             <TextView
                 android:id="@+id/tvQty"
@@ -71,7 +63,7 @@
                 android:text="1"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/md_primary"/>
+                android:textColor="@color/md_on_surface"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPlus"
@@ -80,7 +72,10 @@
                 android:layout_weight="1"
                 android:layout_height="48dp"
                 android:text="+"
-                android:textSize="16sp"
+                android:textColor="@color/md_primary"
+                app:backgroundTint="@color/md_background"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 app:cornerRadius="8dp"/>
 
             <com.google.android.material.button.MaterialButton
@@ -90,16 +85,19 @@
                 android:layout_weight="1.2"
                 android:layout_height="48dp"
                 android:text="Delete"
+                android:textStyle="bold"
                 android:textColor="?attr/colorError"
                 app:cornerRadius="8dp"/>
-
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="8dp"
+            android:textColorHint="@color/md_secondary"
+            app:hintTextColor="@color/md_primary"
+            app:boxStrokeColor="@color/md_primary"
             app:boxCornerRadiusTopStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
@@ -110,6 +108,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Item discount %"
+                android:textColor="@color/md_on_surface"
                 android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 

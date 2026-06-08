@@ -11,6 +11,7 @@ import com.example.myshopapp.presentation.mapper.toSaleEntity
 import com.example.myshopapp.presentation.mapper.toSaleItemEntities
 import com.example.myshopapp.presentation.state.CartItem
 import com.example.myshopapp.presentation.state.PaymentUiState
+import com.example.myshopapp.presentation.util.roundTo2
 import com.example.myshopapp.presentation.util.validateFullSaleRequest
 import com.example.myshopapp.util.Constants.CURRENCY
 import com.example.shopapp.data.remote.model.request.sale.SaleRequest
@@ -34,22 +35,22 @@ class PaymentViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     fun setTotal(total: Double) {
-        _state.update { it.copy(total = total) }
+        _state.update { it.copy(total = total.roundTo2()) }
         recalcalculate()
     }
 
     fun setCash(cash: String) {
-        _state.update { it.copy(cash = cash) }
+        _state.update { it.copy(cash = cash.toDouble().roundTo2().toString()) }
         recalcalculate()
     }
 
     fun setCard(card: String) {
-        _state.update { it.copy(card = card) }
+        _state.update { it.copy(card = card.toDouble().roundTo2().toString()) }
         recalcalculate()
     }
 
     fun setBonus(bonus: String) {
-        _state.update { it.copy(bonus = bonus) }
+        _state.update { it.copy(bonus = bonus.toDouble().roundTo2().toString()) }
         recalcalculate()
     }
 

@@ -29,6 +29,6 @@ data class RollbackRequest(
     @SerializedName("uuid")
     val uuid: String?,
     @SerializedName("vatAmounts")
-    val vatAmounts: List<VatAmount>?
+    val vatAmounts: List<VatAmount>
 
 )

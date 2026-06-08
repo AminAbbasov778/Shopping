@@ -62,6 +62,8 @@ class PaymentFragment : Fragment() {
 
 
 
+
+
     }
 
     private fun setupPayButton() {
@@ -99,6 +101,7 @@ class PaymentFragment : Fragment() {
             }
         }
     }
+
 
 
     override fun onDestroyView() {

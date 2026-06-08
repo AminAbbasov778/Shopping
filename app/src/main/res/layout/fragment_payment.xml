@@ -17,7 +17,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardBackgroundColor="@color/md_surface"
-            app:cardCornerRadius="16dp">
+            app:cardCornerRadius="16dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -46,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:text="Paid: 0"
                     android:textColor="@color/md_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tvRemaining"
@@ -54,17 +55,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Remaining: 0"
-                    android:textColor="@color/md_tertiary"
-                    android:textSize="14sp" />
+                    android:textColor="@color/md_on_surface" android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tvChange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:text="Change: 0"
-                    android:textColor="#2E7D32"
-                    android:textSize="16sp"
+                    android:textColor="#1B5E20" android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -78,13 +77,17 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="8dp"
+                android:textColorHint="@color/md_secondary"
+                app:hintTextColor="@color/md_primary"
+                app:boxStrokeColor="@color/md_primary">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etCash"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Cash"
+                    android:textColor="@color/md_on_surface"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,13 +95,17 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="8dp"
+                android:textColorHint="@color/md_secondary"
+                app:hintTextColor="@color/md_primary"
+                app:boxStrokeColor="@color/md_primary">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Card"
+                    android:textColor="@color/md_on_surface"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -106,16 +113,18 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="20dp" android:textColorHint="@color/md_secondary"
+                app:hintTextColor="@color/md_primary"
+                app:boxStrokeColor="@color/md_primary">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etBonus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Bonus"
+                    android:textColor="@color/md_on_surface"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
-
 
         </LinearLayout>
 
@@ -124,7 +133,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Pay"
-            android:textStyle="bold"
+            android:textColor="@color/md_on_primary" android:textStyle="bold"
+            android:textSize="16sp"
             app:backgroundTint="@color/md_primary"
             app:cornerRadius="12dp" />
 

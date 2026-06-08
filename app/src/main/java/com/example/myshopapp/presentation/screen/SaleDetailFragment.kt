@@ -14,6 +14,7 @@ import com.example.myshopapp.presentation.util.SaleStatus
 import com.example.myshopapp.presentation.util.Util.formatDate
 import com.example.myshopapp.presentation.util.collectEvents
 import com.example.myshopapp.presentation.viewmodel.SaleDetailViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -57,11 +58,9 @@ class SaleDetailFragment : Fragment() {
         binding.btnRefund.setOnClickListener {
             viewModel.rollbackOrRefund()
         }
-
-        binding.btnVoid.setOnClickListener {
+        binding.btnRollback.setOnClickListener {
             viewModel.rollback()
         }
-
         binding.btnReprint.setOnClickListener {
             viewModel.reprint()
         }
@@ -70,35 +69,62 @@ class SaleDetailFragment : Fragment() {
     private fun renderButtons(state: SaleDetailUiState) {
         val status = state.saleFull?.sale?.status
 
-        if (status == SaleStatus.REFUNDED) {
-            binding.btnRefund.text = "Refunded"
-            binding.btnRefund.isEnabled = false
-            binding.btnVoid.isEnabled = false
-            return
+        when (status) {
+            SaleStatus.REFUNDED -> {
+                binding.btnRefund.text = "Refunded"
+                binding.btnRefund.isEnabled = false
+                binding.btnRollback.visibility = View.GONE
+                return
+            }
+            SaleStatus.ROLLED_BACK -> {
+                binding.btnRefund.text = "Voided"
+                binding.btnRefund.isEnabled = false
+                binding.btnRollback.visibility = View.GONE
+                return
+            }
+            SaleStatus.PARTIALLY_REFUNDED -> {
+                binding.btnRefund.text = "Refund"
+                binding.btnRefund.isEnabled = true
+                binding.btnRollback.visibility = View.GONE
+                binding.btnRollback.isEnabled = false
+                return
+            }
+            else -> Unit
         }
 
-        if (status == SaleStatus.ROLLED_BACK) {
-            binding.btnRefund.text = "Rolled Back"
-            binding.btnRefund.isEnabled = false
-            binding.btnVoid.isEnabled = false
-            return
-        }
-
+        // COMPLETED
         if (state.isCashless) {
-            binding.btnVoid.visibility = View.GONE
+            binding.btnRollback.visibility = View.GONE
             if (state.canRollback) {
                 binding.btnRefund.text = "Rollback"
                 binding.btnRefund.isEnabled = true
-            } else if (state.canRefund) {
+            } else {
                 binding.btnRefund.text = "Refund"
                 binding.btnRefund.isEnabled = true
             }
         } else {
-            binding.btnVoid.visibility = View.VISIBLE
+            binding.btnRollback.visibility = View.VISIBLE
+            binding.btnRollback.isEnabled = true
             binding.btnRefund.text = "Refund"
             binding.btnRefund.isEnabled = true
-            binding.btnVoid.isEnabled = true
         }
+    }
+
+    private fun showRollbackWarningDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Diqqət")
+            .setMessage(
+                "Məhsul miqdarlarını dəyişmisiniz, lakin rollback bütün məhsulları tam miqdarla qaytaracaq. Davam etmək istəyirsiniz?"
+            )
+            .setPositiveButton("Bəli") { dialog, _ ->
+                dialog.dismiss()
+                viewModel.confirmRollback()
+            }
+            .setNegativeButton("Xeyr") { dialog, _ ->
+                dialog.dismiss()
+                viewModel.dismissRollbackWarning()
+            }
+            .show()
     }
 
     private fun observeState() {
@@ -108,9 +134,13 @@ class SaleDetailFragment : Fragment() {
 
                 renderButtons(state)
 
+                // Rollback xəbərdarlıq dialoqu
+                if (state.showRollbackWarningDialog) {
+                    showRollbackWarningDialog()
+                }
+
                 state.saleFull?.let { full ->
                     val sale = full.sale
-
                     binding.tvDocumentId.text = sale.shortDocumentId
                     binding.tvTotal.text = "${sale.total} ${sale.currency}"
                     binding.tvCash.text = "Cash: ${sale.cashSum}"

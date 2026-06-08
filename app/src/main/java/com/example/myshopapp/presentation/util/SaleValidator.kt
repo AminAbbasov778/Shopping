@@ -266,8 +266,8 @@ fun validateFullSaleRequest(
         if (p.isAgro) {
             SaleValidator.validateAgroItem(
                 isAgro = true,
-                marginPrice = p.salePrice - p.purchasePrice,
-                marginSum = (p.salePrice - p.purchasePrice) * qty,
+                marginPrice =cartItem.discountedPrice -  p.purchasePrice,
+                marginSum = ( cartItem.discountedPrice -  p.purchasePrice) * qty,
                 itemSum = cartItem.itemSum,
                 qty = qty,
                 creditSum = creditSum,

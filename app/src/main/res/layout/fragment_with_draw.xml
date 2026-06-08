@@ -12,30 +12,37 @@
         android:layout_height="wrap_content"
         android:text="Cash Withdrawal"
         android:textColor="@color/md_primary"
-        android:textSize="22sp"
-        android:textStyle="bold" />
+        android:textSize="24sp" android:textStyle="bold" />
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        app:boxStrokeColor="@color/md_primary">
+        android:textColorHint="@color/md_secondary"
+        app:hintTextColor="@color/md_primary"
+        app:boxStrokeColor="@color/md_primary"
+        app:suffixText="₼" app:suffixTextColor="@color/md_primary"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Amount"
-            android:inputType="numberDecimal" />
+            android:textColor="@color/md_on_surface" android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnWithdraw"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="24dp"
         android:text="Withdraw"
+        android:textColor="@color/md_on_primary" android:textSize="16sp"
         android:textStyle="bold"
         app:backgroundTint="@color/md_primary"
         app:cornerRadius="12dp"/>

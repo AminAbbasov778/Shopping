@@ -50,7 +50,7 @@ class QrScannerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         findNavController().navigate(
             R.id.action_qrScannerFragment_to_saleDetailFragment,
-            bundleOf("documentId" to "CaPoxLRyhipkDW5Dbz9XEDqUVCkTi9c7KyGevK2ChfS6")
+            bundleOf("documentId" to "82BNV5hCL8CiiucVBPeKfNsRnCzkCQHG1EJjfdLLBgnu")
         )
 
         qrScannerManager = QrScannerManager(requireContext()) { qrCode ->
@@ -106,8 +106,6 @@ class QrScannerFragment : Fragment() {
             }
         }
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

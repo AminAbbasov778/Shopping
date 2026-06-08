@@ -141,7 +141,7 @@
                 app:iconPadding="0dp"
                 app:backgroundTint="#E1E2EC"
                 app:cornerRadius="8dp"
-              />
+                />
         </LinearLayout>
 
         <TextView

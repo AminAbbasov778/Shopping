@@ -1,11 +1,14 @@
 package com.example.myshopapp.presentation.mapper
 
+import android.util.Log
 import com.example.myshopapp.data.remote.model.request.sale.Item
 import com.example.myshopapp.presentation.state.CartItem
 import com.example.myshopapp.presentation.util.roundTo2
 import com.example.myshopapp.presentation.util.roundTo3
 
 fun CartItem.toRequestItem(creditSum: Double, cartSize: Int): Item {
+
+
 
     val price         = discountedPrice.roundTo2()
     val sum           = itemSum.roundTo2()
@@ -18,16 +21,20 @@ fun CartItem.toRequestItem(creditSum: Double, cartSize: Int): Item {
     val marginSum: Double?
 
     when {
+
         product.isAgro -> {
             vatPercent  = 18.0
-            marginPrice = (salePrice - purchasePrice).roundTo2()
+            marginPrice = (price - purchasePrice).roundTo2()
             marginSum   = (marginPrice * quantity).roundTo2()
         }
+
         product.vatPercent == 0.0 -> {
             vatPercent  = null
             marginPrice = null
             marginSum   = null
         }
+
+
         else -> {
             vatPercent  = product.vatPercent
             marginPrice = null
@@ -41,6 +48,8 @@ fun CartItem.toRequestItem(creditSum: Double, cartSize: Int): Item {
         else -> 0
     }
 
+    Log.e("TAG", "toRequestItem: $product, $price, $sum, $salePrice, $purchasePrice, $quantity, $vatPercent, $marginPrice, $marginSum, $creditSum, $cartSize")
+
     return Item(
         itemName          = product.name,
         itemCodeType      = codeType,
@@ -48,7 +57,7 @@ fun CartItem.toRequestItem(creditSum: Double, cartSize: Int): Item {
         itemQuantityType  = 0,
         itemQuantity      = quantity,
         itemPrice         = price,
-        itemDiscountPrice = if (discount > 0) (salePrice - price).roundTo2() else null,
+        itemDiscountPrice = 0.0,
         itemSum           = sum,
         itemVatPercent    = vatPercent,
         itemMarginPrice   = marginPrice,

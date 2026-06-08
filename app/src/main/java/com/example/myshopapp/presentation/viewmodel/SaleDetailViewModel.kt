@@ -55,15 +55,12 @@ class SaleDetailViewModel @Inject constructor(
                 return@launch
             }
 
-
-
             val saleFull = saleResult.getOrNull() ?: run {
                 _state.update { it.copy(isLoading = false) }
                 emitError("Satış tapılmadı")
                 return@launch
             }
 
-            // Room-da olan cari sayları ilkin istinad (referens) kimi saxlayırıq
             originalRoomItems = saleFull.items.map { it.copy() }
 
             _state.update {
@@ -72,14 +69,13 @@ class SaleDetailViewModel @Inject constructor(
                     saleFull = saleFull,
                     documentId = documentId,
                     updatedItems = saleFull.items.map { item -> item.copy() },
-                    isCashless = saleFull.sale.cardSum > 0
+                    isCashless = saleFull.sale.cardSum > 0 && saleFull.sale.cashSum == 0.0
                 )
             }
             getStatus()
         }
     }
 
-    // Ekranda say artırılır (Lakin ilkin orijinal say həddindən çox ola bilməz)
     fun plus(item: SaleItemEntity) {
         val originalItem = originalRoomItems.find { it.id == item.id } ?: return
         _state.update { currentState ->
@@ -88,25 +84,20 @@ class SaleDetailViewModel @Inject constructor(
                     if (it.id == item.id) {
                         val newQty = (it.quantity + 1.0).coerceIn(0.0, originalItem.quantity)
                         it.copy(quantity = newQty, sum = (newQty * it.salePrice).roundTo2())
-                    } else {
-                        it
-                    }
+                    } else it
                 }
             )
         }
     }
 
-    // Ekranda say azaldılır (0.0-dan aşağı düşə bilməz)
     fun minus(item: SaleItemEntity) {
         _state.update { currentState ->
             currentState.copy(
                 updatedItems = currentState.updatedItems.map {
                     if (it.id == item.id) {
-                        val newQty = (it.quantity - 1.0).coerceIn(0.0, it.quantity)
+                        val newQty = maxOf(0.0, it.quantity - 1.0)
                         it.copy(quantity = newQty, sum = (newQty * it.salePrice).roundTo2())
-                    } else {
-                        it
-                    }
+                    } else it
                 }
             )
         }
@@ -136,18 +127,49 @@ class SaleDetailViewModel @Inject constructor(
     }
 
     fun rollback() {
+        // Əgər istifadəçi hər hansı məhsulun miqdarını dəyişibsə —
+        // xəbərdarlıq dialoqu göstər, birbaşa icra etmə.
+        val hasQuantityChange = _state.value.updatedItems.any { updated ->
+            val original = originalRoomItems.find { it.id == updated.id }
+            original != null && updated.quantity != original.quantity
+        }
+        if (hasQuantityChange) {
+            _state.update { it.copy(showRollbackWarningDialog = true) }
+            return
+        }
+        executeRollback()
+    }
+
+    /** Dialog-da "Bəli" kliklənəndə Fragment bu funksiyanı çağırır. */
+    fun confirmRollback() {
+        _state.update { it.copy(showRollbackWarningDialog = false) }
+        executeRollback()
+    }
+
+    /** Dialog-da "Xeyr" kliklənəndə Fragment bu funksiyanı çağırır. */
+    fun dismissRollbackWarning() {
+        _state.update { it.copy(showRollbackWarningDialog = false) }
+    }
+
+    private fun executeRollback() {
         val saleFull = _state.value.saleFull ?: return
+        val fullSaleFull = saleFull.copy(items = originalRoomItems)
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            rollbackUseCase(saleFull.toRollbackRequest())
+            rollbackUseCase(fullSaleFull.toRollbackRequest())
                 .onSuccess { response ->
                     if (response.code == 0) {
                         updateSaleStatusUseCase(state.value.documentId, SaleStatus.ROLLED_BACK).onSuccess {
                             _state.update { s ->
                                 s.copy(
                                     isLoading = false,
-                                    saleFull = saleFull.copy(sale = saleFull.sale.copy(status = SaleStatus.ROLLED_BACK))
+                                    updatedItems = originalRoomItems,
+                                    saleFull = saleFull.copy(
+                                        items = originalRoomItems,
+                                        sale = saleFull.sale.copy(status = SaleStatus.ROLLED_BACK)
+                                    )
                                 )
                             }
                             emitSuccess("Ləğv uğurlu!")
@@ -172,7 +194,6 @@ class SaleDetailViewModel @Inject constructor(
         val saleFull = _state.value.saleFull ?: return
         val updatedItems = _state.value.updatedItems
 
-        // 1. Hər hansı bir məhsulun sayının azaldılıb-azaldılmadığını yoxlayırıq
         val isAnyChanged = updatedItems.any { updatedItem ->
             val originalItem = originalRoomItems.find { it.id == updatedItem.id }
             originalItem != null && updatedItem.quantity < originalItem.quantity
@@ -183,7 +204,6 @@ class SaleDetailViewModel @Inject constructor(
             return
         }
 
-        // 2. Kompleks refund hesablama obyektimizi çağırırıq
         val refundTotals = SaleRefundCalculator.calculateRefund(
             originalItems = originalRoomItems,
             updatedItems = updatedItems,
@@ -193,7 +213,6 @@ class SaleDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            // 3. API Sorğusuna yalnız geri qaytarılan (azaldılmış) məhsulların hesabatını ötürürük
             moneyBackUseCase(saleFull.toMoneyBackRequest(refundTotals))
                 .onSuccess { response ->
                     if (response.code != 0) {
@@ -201,22 +220,23 @@ class SaleDetailViewModel @Inject constructor(
                         emitError(response.message)
                         return@onSuccess
                     }
-                    Log.d("refund", "refundUseCase success")
 
-                    // 4. Statusun bazada yenilənməsi
-                    updateSaleStatusUseCase(state.value.documentId, SaleStatus.REFUNDED).onSuccess {
+                    val newStatus = if (refundTotals.remainingItems.any { it.quantity > 0 })
+                        SaleStatus.PARTIALLY_REFUNDED
+                    else
+                        SaleStatus.REFUNDED
 
-                        // 5. Room bazasında məhsulların yeni (qalan) miqdar + sum yenilənir
+                    updateSaleStatusUseCase(state.value.documentId, newStatus).onSuccess {
+
                         updateQuantityUseCase(refundTotals.remainingItems, saleFull.sale.documentId)
 
-                        // 6. Hər ödəniş metodunu orijinal nisbətə proporsional azaldırıq
-                        val refundRatio      = if (saleFull.sale.total > 0) refundTotals.totalRefundSum / saleFull.sale.total else 0.0
-                        val newTotal         = (saleFull.sale.total        - refundTotals.totalRefundSum).roundTo2()
-                        val newCashSum       = (saleFull.sale.cashSum      - (saleFull.sale.cashSum      * refundRatio).roundTo2()).roundTo2()
-                        val newCardSum       = (saleFull.sale.cardSum      - (saleFull.sale.cardSum      * refundRatio).roundTo2()).roundTo2()
-                        val newBonusSum      = (saleFull.sale.bonusSum     - (saleFull.sale.bonusSum     * refundRatio).roundTo2()).roundTo2()
-                        val newCreditSum     = (saleFull.sale.creditSum    - (saleFull.sale.creditSum    * refundRatio).roundTo2()).roundTo2()
-                        val newPrepaySum     = (saleFull.sale.prepaymentSum- (saleFull.sale.prepaymentSum* refundRatio).roundTo2()).roundTo2()
+                        val refundRatio   = if (saleFull.sale.total > 0) refundTotals.totalRefundSum / saleFull.sale.total else 0.0
+                        val newTotal      = (saleFull.sale.total         - refundTotals.totalRefundSum).roundTo2()
+                        val newCashSum    = (saleFull.sale.cashSum       - (saleFull.sale.cashSum       * refundRatio).roundTo2()).roundTo2()
+                        val newCardSum    = (saleFull.sale.cardSum       - (saleFull.sale.cardSum       * refundRatio).roundTo2()).roundTo2()
+                        val newBonusSum   = (saleFull.sale.bonusSum      - (saleFull.sale.bonusSum      * refundRatio).roundTo2()).roundTo2()
+                        val newCreditSum  = (saleFull.sale.creditSum     - (saleFull.sale.creditSum     * refundRatio).roundTo2()).roundTo2()
+                        val newPrepaySum  = (saleFull.sale.prepaymentSum - (saleFull.sale.prepaymentSum * refundRatio).roundTo2()).roundTo2()
 
                         updateSaleTotalsUseCase(
                             documentId    = saleFull.sale.documentId,
@@ -228,13 +248,12 @@ class SaleDetailViewModel @Inject constructor(
                             prepaymentSum = newPrepaySum
                         )
 
-                        // 7. UI State sinxronlaşdırılır
                         _state.update { s ->
                             s.copy(
                                 isLoading = false,
                                 saleFull = saleFull.copy(
                                     sale = saleFull.sale.copy(
-                                        status        = SaleStatus.REFUNDED,
+                                        status        = newStatus,
                                         total         = newTotal,
                                         cashSum       = newCashSum,
                                         cardSum       = newCardSum,
